@@ -92,7 +92,9 @@ void OCP_QCQP_IPM_ARG_CREATE(struct OCP_QCQP_DIM *dim, struct OCP_QCQP_IPM_ARG *
 #if defined(RUNTIME_CHECKS)
 	if(c_ptr > ((char *) mem) + arg->memsize)
 		{
+#ifdef EXT_DEP
 		printf("\nerror: OCP_QCQP_IPM_ARG_CREATE: outside memory bounds!\n\n");
+#endif
 		exit(1);
 		}
 #endif
@@ -221,7 +223,9 @@ void OCP_QCQP_IPM_ARG_SET_DEFAULT(enum HPIPM_MODE mode, struct OCP_QCQP_IPM_ARG 
 		}
 	else
 		{
+#ifdef EXT_DEP
 		printf("\nerror: OCP_QCQP_IPM_ARG_SET_DEFAULT: wrong set default mode\n");
+#endif
 		exit(1);
 		}
 
@@ -333,7 +337,9 @@ void OCP_QCQP_IPM_ARG_SET(char *field, void *value, struct OCP_QCQP_IPM_ARG *arg
 		}
 	else
 		{
+#ifdef EXT_DEP
 		printf("error: OCP_QCQP_IPM_ARG_SET: wrong field %s\n", field);
+#endif
 		exit(1);	
 		}
 	return;
@@ -644,7 +650,9 @@ void OCP_QCQP_IPM_WS_CREATE(struct OCP_QCQP_DIM *dim, struct OCP_QCQP_IPM_ARG *a
 #if defined(RUNTIME_CHECKS)
 	if(c_ptr > ((char *) mem) + workspace->memsize)
 		{
+#ifdef EXT_DEP
 		printf("\nCreate_dense_qp_ipm: outside memory bounds!\n\n");
+#endif
 		exit(1);
 		}
 #endif
@@ -696,7 +704,9 @@ void OCP_QCQP_IPM_GET(char *field, struct OCP_QCQP_IPM_WS *ws, void *value)
 		}
 	else 
 		{
+#ifdef EXT_DEP
 		printf("error: OCP_QCQP_IPM_GET: wrong field %s\n", field);
+#endif
 		exit(1);
 		}
 	return;
@@ -1601,7 +1611,8 @@ void OCP_QCQP_IPM_SOLVE(struct OCP_QCQP *qcqp, struct OCP_QCQP_SOL *qcqp_sol, st
 				stat[7] = qcqp_res_max[1];
 				stat[8] = qcqp_res_max[2];
 				stat[9] = qcqp_res_max[3];
-				stat[10] = qcqp_res->obj;
+				stat[10] = qcqp_res->dual_gap;
+				stat[11] = qcqp_res->obj;
 				}
 			cws->mu = qcqp_res->res_mu;
 			}
@@ -1707,7 +1718,8 @@ void OCP_QCQP_IPM_SOLVE(struct OCP_QCQP *qcqp, struct OCP_QCQP_SOL *qcqp_sol, st
 				stat[stat_m*(kk+0)+7] = qcqp_res_max[1];
 				stat[stat_m*(kk+0)+8] = qcqp_res_max[2];
 				stat[stat_m*(kk+0)+9] = qcqp_res_max[3];
-				stat[stat_m*(kk+0)+10] = qcqp_res->obj;
+				stat[stat_m*(kk+0)+10] = qcqp_res->dual_gap;
+				stat[stat_m*(kk+0)+11] = qcqp_res->obj;
 				}
 			}
 
@@ -1736,7 +1748,8 @@ void OCP_QCQP_IPM_SOLVE(struct OCP_QCQP *qcqp, struct OCP_QCQP_SOL *qcqp_sol, st
 		stat[stat_m*(0)+7] = qcqp_res_max[1];
 		stat[stat_m*(0)+8] = qcqp_res_max[2];
 		stat[stat_m*(0)+9] = qcqp_res_max[3];
-		stat[stat_m*(0)+10] = qcqp_res->obj;
+		stat[stat_m*(0)+10] = qcqp_res->dual_gap;
+		stat[stat_m*(0)+11] = qcqp_res->obj;
 		}
 
 
@@ -1790,7 +1803,8 @@ void OCP_QCQP_IPM_SOLVE(struct OCP_QCQP *qcqp, struct OCP_QCQP_SOL *qcqp_sol, st
 			stat[stat_m*(kk+1)+7] = qcqp_res_max[1];
 			stat[stat_m*(kk+1)+8] = qcqp_res_max[2];
 			stat[stat_m*(kk+1)+9] = qcqp_res_max[3];
-			stat[stat_m*(kk+1)+10] = qcqp_res->obj;
+			stat[stat_m*(kk+1)+10] = qcqp_res->dual_gap;
+			stat[stat_m*(kk+1)+11] = qcqp_res->obj;
 			}
 
 		}

@@ -37,6 +37,7 @@
 
 void OCP_QCQP_DIM_PRINT(struct OCP_QCQP_DIM *qp_dim)
 	{
+#ifdef EXT_DEP
 	int ii;
 
 	int N   = qp_dim->N;
@@ -133,6 +134,7 @@ void OCP_QCQP_DIM_PRINT(struct OCP_QCQP_DIM *qp_dim)
 		printf("\t%d", nqe[ii]);
 	printf("\n\n");
 
+#endif
 	return;
 	}
 
@@ -140,6 +142,7 @@ void OCP_QCQP_DIM_PRINT(struct OCP_QCQP_DIM *qp_dim)
 
 void OCP_QCQP_DIM_CODEGEN(char *file_name, char *mode, struct OCP_QCQP_DIM *qp_dim)
 	{
+#ifdef EXT_DEP
 	int ii;
 
 	FILE *file = fopen(file_name, mode);
@@ -274,6 +277,7 @@ void OCP_QCQP_DIM_CODEGEN(char *file_name, char *mode, struct OCP_QCQP_DIM *qp_d
 
 	fclose(file);
 
+#endif
 	return;
 	}
 
@@ -281,6 +285,7 @@ void OCP_QCQP_DIM_CODEGEN(char *file_name, char *mode, struct OCP_QCQP_DIM *qp_d
 
 void OCP_QCQP_PRINT(struct OCP_QCQP_DIM *dim, struct OCP_QCQP *qp)
 	{
+#ifdef EXT_DEP
 	int ii, jj;
 
 	int N   = dim->N;
@@ -363,6 +368,7 @@ void OCP_QCQP_PRINT(struct OCP_QCQP_DIM *dim, struct OCP_QCQP *qp)
 	for (ii = 0; ii <= N; ii++)
 		int_print_mat(1, nbue[ii]+nbxe[ii]+nge[ii]+nqe[ii], qp->idxe[ii], 1);
 
+#endif
 	return;
 	}
 
@@ -370,6 +376,7 @@ void OCP_QCQP_PRINT(struct OCP_QCQP_DIM *dim, struct OCP_QCQP *qp)
 
 void OCP_QCQP_CODEGEN(char *file_name, char *mode, struct OCP_QCQP_DIM *dim, struct OCP_QCQP *qp)
 	{
+#ifdef EXT_DEP
 	int nn, ii, jj, kk, idx_tmp;
 
 	FILE *file = fopen(file_name, mode);
@@ -1382,7 +1389,7 @@ void OCP_QCQP_CODEGEN(char *file_name, char *mode, struct OCP_QCQP_DIM *dim, str
 #else
 		fprintf(file, "static float uq_mask%d[] = {", nn);
 #endif
-		for(jj=0; jj<ng[nn]; jj++)
+		for(jj=0; jj<nq[nn]; jj++)
 			{
 			fprintf(file, "%18.15e, ", BLASFEO_DVECEL(qp->d_mask+nn, 2*nb[nn]+2*ng[nn]+nq[nn]+jj));
 			}
@@ -1585,6 +1592,35 @@ void OCP_QCQP_CODEGEN(char *file_name, char *mode, struct OCP_QCQP_DIM *dim, str
 	fprintf(file, "float **hlls = llls;\n");
 #endif
 
+	// lls_mask
+	fprintf(file, "/* lls_mask */\n");
+	for(nn=0; nn<=N; nn++)
+		{
+#ifdef DOUBLE_PRECISION
+		fprintf(file, "static double lls_mask%d[] = {", nn);
+#else
+		fprintf(file, "static float lls_mask%d[] = {", nn);
+#endif
+		for(jj=0; jj<ns[nn]; jj++)
+			{
+			fprintf(file, "%18.15e, ", BLASFEO_DVECEL(qp->d_mask+nn, 2*nb[nn]+2*ng[nn]+2*nq[nn]+jj));
+			}
+		fprintf(file, "};\n");
+		}
+#ifdef DOUBLE_PRECISION
+	fprintf(file, "static double *llls_mask[] = {");
+#else
+	fprintf(file, "static float *llls_mask[] = {");
+#endif
+	for(nn=0; nn<=N; nn++)
+		fprintf(file, "lls_mask%d, ", nn);
+	fprintf(file, "};\n");
+#ifdef DOUBLE_PRECISION
+	fprintf(file, "double **hlls_mask = llls_mask;\n");
+#else
+	fprintf(file, "float **hlls_mask = llls_mask;\n");
+#endif
+
 	// lus
 	fprintf(file, "/* lus */\n");
 	for(nn=0; nn<=N; nn++)
@@ -1614,12 +1650,41 @@ void OCP_QCQP_CODEGEN(char *file_name, char *mode, struct OCP_QCQP_DIM *dim, str
 	fprintf(file, "float **hlus = llus;\n");
 #endif
 
+	// lus_mask
+	fprintf(file, "/* lus_mask */\n");
+	for(nn=0; nn<=N; nn++)
+		{
+#ifdef DOUBLE_PRECISION
+		fprintf(file, "static double lus_mask%d[] = {", nn);
+#else
+		fprintf(file, "static float lus_mask%d[] = {", nn);
+#endif
+		for(jj=0; jj<ns[nn]; jj++)
+			{
+			fprintf(file, "%18.15e, ", BLASFEO_DVECEL(qp->d_mask+nn, 2*nb[nn]+2*ng[nn]+2*nq[nn]+ns[nn]+jj));
+			}
+		fprintf(file, "};\n");
+		}
+#ifdef DOUBLE_PRECISION
+	fprintf(file, "static double *llus_mask[] = {");
+#else
+	fprintf(file, "static float *llus_mask[] = {");
+#endif
+	for(nn=0; nn<=N; nn++)
+		fprintf(file, "lus_mask%d, ", nn);
+	fprintf(file, "};\n");
+#ifdef DOUBLE_PRECISION
+	fprintf(file, "double **hlus_mask = llus_mask;\n");
+#else
+	fprintf(file, "float **hlus_mask = llus_mask;\n");
+#endif
+
 	// idxe
 	fprintf(file, "/* idxe */\n");
 	for(nn=0; nn<=N; nn++)
 		{
 		fprintf(file, "static int idxe%d[] = {", nn);
-		for(jj=0; jj<nbue[nn]+nbxe[nn]+nge[nn]; jj++)
+		for(jj=0; jj<nbue[nn]+nbxe[nn]+nge[nn]+nqe[nn]; jj++)
 			{
 			fprintf(file, "%d, ", qp->idxe[nn][jj]);
 			}
@@ -1651,6 +1716,7 @@ void OCP_QCQP_CODEGEN(char *file_name, char *mode, struct OCP_QCQP_DIM *dim, str
 
 	fclose(file);
 
+#endif
 	return;
 	}
 
@@ -1658,6 +1724,7 @@ void OCP_QCQP_CODEGEN(char *file_name, char *mode, struct OCP_QCQP_DIM *dim, str
 
 void OCP_QCQP_SOL_PRINT(struct OCP_QCQP_DIM *qp_dim, struct OCP_QCQP_SOL *qp_sol)
 	{
+#ifdef EXT_DEP
 	int ii;
 
 	int N   = qp_dim->N;
@@ -1684,6 +1751,7 @@ void OCP_QCQP_SOL_PRINT(struct OCP_QCQP_DIM *qp_dim, struct OCP_QCQP_SOL *qp_sol
 	for (ii = 0; ii <= N; ii++)
 		BLASFEO_PRINT_TRAN_VEC(2*nb[ii]+2*ng[ii]+2*nq[ii]+2*ns[ii], &qp_sol->t[ii], 0);
 
+#endif
 	return;
 	}
 
@@ -1691,6 +1759,7 @@ void OCP_QCQP_SOL_PRINT(struct OCP_QCQP_DIM *qp_dim, struct OCP_QCQP_SOL *qp_sol
 
 void OCP_QCQP_IPM_ARG_CODEGEN(char *file_name, char *mode, struct OCP_QCQP_DIM *qp_dim, struct OCP_QCQP_IPM_ARG *arg)
 	{
+#ifdef EXT_DEP
 	int ii;
 
 	FILE *file = fopen(file_name, mode);
@@ -1739,6 +1808,7 @@ void OCP_QCQP_IPM_ARG_CODEGEN(char *file_name, char *mode, struct OCP_QCQP_DIM *
 
 	fclose(file);
 
+#endif
 	return;
 	}
 
@@ -1746,6 +1816,7 @@ void OCP_QCQP_IPM_ARG_CODEGEN(char *file_name, char *mode, struct OCP_QCQP_DIM *
 
 void OCP_QCQP_RES_PRINT(struct OCP_QCQP_DIM *qp_dim, struct OCP_QCQP_RES *qp_res)
 	{
+#ifdef EXT_DEP
 	int ii;
 
 	int N   = qp_dim->N;
@@ -1772,6 +1843,7 @@ void OCP_QCQP_RES_PRINT(struct OCP_QCQP_DIM *qp_dim, struct OCP_QCQP_RES *qp_res
 	for (ii = 0; ii <= N; ii++)
 		BLASFEO_PRINT_EXP_TRAN_VEC(2*nb[ii]+2*ng[ii]+2*nq[ii]+2*ns[ii], &qp_res->res_m[ii], 0);
 
+#endif
 	return;
 	}
 

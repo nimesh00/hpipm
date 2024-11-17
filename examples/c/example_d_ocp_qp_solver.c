@@ -77,21 +77,29 @@ extern double **hq;
 extern double **hr;
 extern int **hidxbx;
 extern double **hlbx;
+extern double **hlbx_mask;
 extern double **hubx;
+extern double **hubx_mask;
 extern int **hidxbu;
 extern double **hlbu;
+extern double **hlbu_mask;
 extern double **hubu;
+extern double **hubu_mask;
 extern double **hC;
 extern double **hD;
 extern double **hlg;
+extern double **hlg_mask;
 extern double **hug;
+extern double **hug_mask;
 extern double **hZl;
 extern double **hZu;
 extern double **hzl;
 extern double **hzu;
 extern int **hidxs;
 extern double **hlls;
+extern double **hlls_mask;
 extern double **hlus;
+extern double **hlus_mask;
 extern int **hidxe;
 // arg
 extern int mode;
@@ -132,10 +140,18 @@ int main()
 	struct d_ocp_qp_dim dim;
 	d_ocp_qp_dim_create(N, &dim, dim_mem);
 
-	// global setter
+	// unified setter
 	d_ocp_qp_dim_set_all(nx, nu, nbx, nbu, ng, nsbx, nsbu, nsg, &dim);
-	// individual setters
-	d_ocp_qp_dim_set_nbxe(0, nbxe[0], &dim);
+
+	// additional single setters
+
+	// set number of inequality constr to be considered as equality constr
+	for(ii=0; ii<=N; ii++)
+		{
+		d_ocp_qp_dim_set_nbxe(ii, nbxe[ii], &dim);
+		d_ocp_qp_dim_set_nbue(ii, nbue[ii], &dim);
+		d_ocp_qp_dim_set_nge(ii, nge[ii], &dim);
+		}
 
 //	d_ocp_qp_dim_codegen("examples/c/data/test_d_ocp_data.c", "w", &dim);
 
@@ -149,10 +165,29 @@ int main()
 	struct d_ocp_qp qp;
 	d_ocp_qp_create(&dim, &qp, qp_mem);
 
-	// global setter
+	// unified setter
 	d_ocp_qp_set_all(hA, hB, hb, hQ, hS, hR, hq, hr, hidxbx, hlbx, hubx, hidxbu, hlbu, hubu, hC, hD, hlg, hug, hZl, hZu, hzl, hzu, hidxs, hlls, hlus, &qp);
-	// individual setters
-	d_ocp_qp_set_idxe(0, hidxe[0], &qp);
+
+	// additional single setters
+
+	// mark the inequality constr to be considered as equality constr
+	for(ii=0; ii<=N; ii++)
+		{
+		d_ocp_qp_set_idxe(ii, hidxe[ii], &qp);
+		}
+
+	// set inequality constraints mask
+	for(ii=0; ii<=N; ii++)
+		{
+		d_ocp_qp_set_lbu_mask(ii, hlbu_mask[ii], &qp);
+		d_ocp_qp_set_ubu_mask(ii, hubu_mask[ii], &qp);
+		d_ocp_qp_set_lbx_mask(ii, hlbx_mask[ii], &qp);
+		d_ocp_qp_set_ubx_mask(ii, hubx_mask[ii], &qp);
+		d_ocp_qp_set_lg_mask(ii, hlg_mask[ii], &qp);
+		d_ocp_qp_set_ug_mask(ii, hug_mask[ii], &qp);
+		d_ocp_qp_set_lls_mask(ii, hlls_mask[ii], &qp);
+		d_ocp_qp_set_lus_mask(ii, hlus_mask[ii], &qp);
+		}
 
 //	d_ocp_qp_codegen("examples/c/data/test_d_ocp_data.c", "a", &dim, &qp);
 
@@ -324,17 +359,17 @@ int main()
 
 	// all solution components at once
 
-	double **u1 = malloc((N+1)*sizeof(double *)); for(ii=0; ii<=N; ii++) d_zeros(u1+ii, nu[ii], 1);
-	double **x1 = malloc((N+1)*sizeof(double *)); for(ii=0; ii<=N; ii++) d_zeros(x1+ii, nx[ii], 1);
-	double **ls1 = malloc((N+1)*sizeof(double *)); for(ii=0; ii<=N; ii++) d_zeros(ls1+ii, nsbu[ii]+nsbx[ii]+nsg[ii], 1);
-	double **us1 = malloc((N+1)*sizeof(double *)); for(ii=0; ii<=N; ii++) d_zeros(us1+ii, nsbu[ii]+nsbx[ii]+nsg[ii], 1);
-	double **pi1 = malloc((N)*sizeof(double *)); for(ii=0; ii<N; ii++) d_zeros(pi1+ii, nx[ii+1], 1);
-	double **lam_lb1 = malloc((N+1)*sizeof(double *)); for(ii=0; ii<=N; ii++) d_zeros(lam_lb1+ii, nbu[ii]+nbx[ii], 1);
-	double **lam_ub1 = malloc((N+1)*sizeof(double *)); for(ii=0; ii<=N; ii++) d_zeros(lam_ub1+ii, nbu[ii]+nbx[ii], 1);
-	double **lam_lg1 = malloc((N+1)*sizeof(double *)); for(ii=0; ii<=N; ii++) d_zeros(lam_lg1+ii, ng[ii], 1);
-	double **lam_ug1 = malloc((N+1)*sizeof(double *)); for(ii=0; ii<=N; ii++) d_zeros(lam_ug1+ii, ng[ii], 1);
-	double **lam_ls1 = malloc((N+1)*sizeof(double *)); for(ii=0; ii<=N; ii++) d_zeros(lam_ls1+ii, nsbu[ii]+nsbx[ii]+nsg[ii], 1);
-	double **lam_us1 = malloc((N+1)*sizeof(double *)); for(ii=0; ii<=N; ii++) d_zeros(lam_us1+ii, nsbu[ii]+nsbx[ii]+nsg[ii], 1);
+	double **u1 = malloc((N+1)*sizeof(double *)); for(ii=0; ii<=N; ii++) u1[ii] = malloc((nu[ii])*sizeof(double));
+	double **x1 = malloc((N+1)*sizeof(double *)); for(ii=0; ii<=N; ii++) x1[ii] = malloc((nx[ii])*sizeof(double));
+	double **ls1 = malloc((N+1)*sizeof(double *)); for(ii=0; ii<=N; ii++) ls1[ii] = malloc((nsbu[ii]+nsbx[ii]+nsg[ii])*sizeof(double));
+	double **us1 = malloc((N+1)*sizeof(double *)); for(ii=0; ii<=N; ii++) us1[ii] = malloc((nsbu[ii]+nsbx[ii]+nsg[ii])*sizeof(double));
+	double **pi1 = malloc((N)*sizeof(double *)); for(ii=0; ii<N; ii++) pi1[ii] = malloc((nx[ii+1])*sizeof(double));
+	double **lam_lb1 = malloc((N+1)*sizeof(double *)); for(ii=0; ii<=N; ii++) lam_lb1[ii] = malloc((nbu[ii]+nbx[ii])*sizeof(double));
+	double **lam_ub1 = malloc((N+1)*sizeof(double *)); for(ii=0; ii<=N; ii++) lam_ub1[ii] = malloc((nbu[ii]+nbx[ii])*sizeof(double));
+	double **lam_lg1 = malloc((N+1)*sizeof(double *)); for(ii=0; ii<=N; ii++) lam_lg1[ii] = malloc((ng[ii])*sizeof(double));
+	double **lam_ug1 = malloc((N+1)*sizeof(double *)); for(ii=0; ii<=N; ii++) lam_ug1[ii] = malloc((ng[ii])*sizeof(double));
+	double **lam_ls1 = malloc((N+1)*sizeof(double *)); for(ii=0; ii<=N; ii++) lam_ls1[ii] = malloc((nsbu[ii]+nsbx[ii]+nsg[ii])*sizeof(double));
+	double **lam_us1 = malloc((N+1)*sizeof(double *)); for(ii=0; ii<=N; ii++) lam_us1[ii] = malloc((nsbu[ii]+nsbx[ii]+nsg[ii])*sizeof(double));
 
 	d_ocp_qp_sol_get_all(&qp_sol, u1, x1, ls1, us1, pi1, lam_lb1, lam_ub1, lam_lg1, lam_ug1, lam_ls1, lam_us1);
 
@@ -363,7 +398,7 @@ int main()
 	printf("\nipm residuals max: res_g = %e, res_b = %e, res_d = %e, res_m = %e\n", res_stat, res_eq, res_ineq, res_comp);
 
 	printf("\nipm iter = %d\n", iter);
-	printf("\nalpha_aff\tmu_aff\t\tsigma\t\talpha_prim\talpha_dual\tmu\t\tres_stat\tres_eq\t\tres_ineq\tres_comp\tobj\t\tlq fact\t\titref pred\titref corr\tlin res stat\tlin res eq\tlin res ineq\tlin res comp\n");
+	printf("\nalpha_aff\tmu_aff\t\tsigma\t\talpha_prim\talpha_dual\tmu\t\tres_stat\tres_eq\t\tres_ineq\tres_comp\tdual_gap\tobj\t\tlq fact\t\titref pred\titref corr\tlin res stat\tlin res eq\tlin res ineq\tlin res comp\n");
 	d_print_exp_tran_mat(stat_m, iter+1, stat, stat_m);
 
 	printf("\nocp ipm time = %e [s]\n\n", time_ipm);
@@ -483,28 +518,28 @@ int main()
 
 	for(ii=0; ii<N; ii++)
 		{
-		d_free(u1[ii]);
-		d_free(x1[ii]);
-		d_free(ls1[ii]);
-		d_free(us1[ii]);
-		d_free(pi1[ii]);
-		d_free(lam_lb1[ii]);
-		d_free(lam_ub1[ii]);
-		d_free(lam_lg1[ii]);
-		d_free(lam_ug1[ii]);
-		d_free(lam_ls1[ii]);
-		d_free(lam_us1[ii]);
+		free(u1[ii]);
+		free(x1[ii]);
+		free(ls1[ii]);
+		free(us1[ii]);
+		free(pi1[ii]);
+		free(lam_lb1[ii]);
+		free(lam_ub1[ii]);
+		free(lam_lg1[ii]);
+		free(lam_ug1[ii]);
+		free(lam_ls1[ii]);
+		free(lam_us1[ii]);
 		}
-	d_free(u1[ii]);
-	d_free(x1[ii]);
-	d_free(ls1[ii]);
-	d_free(us1[ii]);
-	d_free(lam_lb1[ii]);
-	d_free(lam_ub1[ii]);
-	d_free(lam_lg1[ii]);
-	d_free(lam_ug1[ii]);
-	d_free(lam_ls1[ii]);
-	d_free(lam_us1[ii]);
+	free(u1[ii]);
+	free(x1[ii]);
+	free(ls1[ii]);
+	free(us1[ii]);
+	free(lam_lb1[ii]);
+	free(lam_ub1[ii]);
+	free(lam_lg1[ii]);
+	free(lam_ug1[ii]);
+	free(lam_ls1[ii]);
+	free(lam_us1[ii]);
 
 	free(u1);
 	free(x1);

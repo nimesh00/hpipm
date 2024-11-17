@@ -80,21 +80,29 @@ extern double **hq;
 extern double **hr;
 extern int **hidxbx;
 extern double **hlbx;
+extern double **hlbx_mask;
 extern double **hubx;
+extern double **hubx_mask;
 extern int **hidxbu;
 extern double **hlbu;
+extern double **hlbu_mask;
 extern double **hubu;
+extern double **hubu_mask;
 extern double **hC;
 extern double **hD;
 extern double **hlg;
+extern double **hlg_mask;
 extern double **hug;
+extern double **hug_mask;
 extern double **hZl;
 extern double **hZu;
 extern double **hzl;
 extern double **hzu;
 extern int **hidxs;
 extern double **hlls;
+extern double **hlls_mask;
 extern double **hlus;
+extern double **hlus_mask;
 extern int **hidxe;
 // arg
 extern int mode;
@@ -135,7 +143,19 @@ int main()
 	struct d_ocp_qp_dim dim;
 	d_ocp_qp_dim_create(N, &dim, dim_mem);
 
+	// unified setter
 	d_ocp_qp_dim_set_all(nx, nu, nbx, nbu, ng, nsbx, nsbu, nsg, &dim);
+
+	// additional single setters
+
+	// set number of inequality constr to be considered as equality constr
+	// (ignored in this example)
+	//for(ii=0; ii<=N; ii++)
+	//	{
+	//	d_ocp_qp_dim_set_nbxe(ii, nbxe[ii], &dim);
+	//	d_ocp_qp_dim_set_nbue(ii, nbue[ii], &dim);
+	//	d_ocp_qp_dim_set_nge(ii, nge[ii], &dim);
+	//	}
 
 //	d_ocp_qp_dim_codegen("examples/c/data/test_d_ocp_data.c", "w", &dim);
 
@@ -172,7 +192,30 @@ int main()
 	struct d_ocp_qp qp;
 	d_ocp_qp_create(&dim, &qp, qp_mem);
 
+	// unified setter
 	d_ocp_qp_set_all(hA, hB, hb, hQ, hS, hR, hq, hr, hidxbx, hlbx, hubx, hidxbu, hlbu, hubu, hC, hD, hlg, hug, hZl, hZu, hzl, hzu, hidxs, hlls, hlus, &qp);
+
+	// additional single setters
+
+	// mark the inequality constr to be considered as equality constr
+	// (ignored in this example)
+	//for(ii=0; ii<=N; ii++)
+	//	{
+	//	d_ocp_qp_set_idxe(ii, hidxe[ii], &qp);
+	//	}
+
+	// set inequality constraints mask
+	for(ii=0; ii<=N; ii++)
+		{
+		d_ocp_qp_set_lbu_mask(ii, hlbu_mask[ii], &qp);
+		d_ocp_qp_set_ubu_mask(ii, hubu_mask[ii], &qp);
+		d_ocp_qp_set_lbx_mask(ii, hlbx_mask[ii], &qp);
+		d_ocp_qp_set_ubx_mask(ii, hubx_mask[ii], &qp);
+		d_ocp_qp_set_lg_mask(ii, hlg_mask[ii], &qp);
+		d_ocp_qp_set_ug_mask(ii, hug_mask[ii], &qp);
+		d_ocp_qp_set_lls_mask(ii, hlls_mask[ii], &qp);
+		d_ocp_qp_set_lus_mask(ii, hlus_mask[ii], &qp);
+		}
 
 //	d_ocp_qp_codegen("examples/c/data/test_d_ocp_data.c", "a", &dim, &qp);
 
@@ -390,7 +433,7 @@ int main()
 	printf("\nipm residuals max: res_g = %e, res_b = %e, res_d = %e, res_m = %e\n", res_stat, res_eq, res_ineq, res_comp);
 
 	printf("\nipm iter = %d\n", iter);
-	printf("\nalpha_aff\tmu_aff\t\tsigma\t\talpha_prim\talpha_dual\tmu\t\tres_stat\tres_eq\t\tres_ineq\tres_comp\tobj\t\tlq fact\t\titref pred\titref corr\tlin res stat\tlin res eq\tlin res ineq\tlin res comp\n");
+	printf("\nalpha_aff\tmu_aff\t\tsigma\t\talpha_prim\talpha_dual\tmu\t\tres_stat\tres_eq\t\tres_ineq\tres_comp\tdual_gap\tobj\t\tlq fact\t\titref pred\titref corr\tlin res stat\tlin res eq\tlin res ineq\tlin res comp\n");
 	d_print_exp_tran_mat(stat_m, iter+1, stat, stat_m);
 
 	printf("\npart cond time = %e [s]\n\n", time_cond);

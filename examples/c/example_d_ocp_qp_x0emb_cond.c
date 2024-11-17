@@ -105,8 +105,9 @@ extern double **hzl;
 extern double **hzu;
 extern int **hidxs;
 extern double **hlls;
+extern double **hlls_mask;
 extern double **hlus;
-// TODO mask soft constraints
+extern double **hlus_mask;
 extern int **hidxe;
 // arg
 extern int mode;
@@ -147,10 +148,12 @@ int main()
 	struct d_ocp_qp_dim dim;
 	d_ocp_qp_dim_create(N, &dim, dim_mem);
 
+	// unified setter
 	d_ocp_qp_dim_set_all(nx, nu, nbx, nbu, ng, nsbx, nsbu, nsg, &dim);
 
+	// additional single setters
+
 	// set number of inequality constr to be considered as equality constr
-//	d_ocp_qp_dim_set_nbxe(0, nx[0], &dim);
 	for(ii=0; ii<=N; ii++)
 		{
 		d_ocp_qp_dim_set_nbxe(ii, nbxe[ii], &dim);
@@ -194,13 +197,12 @@ int main()
 	struct d_ocp_qp qp;
 	d_ocp_qp_create(&dim, &qp, qp_mem);
 
+	// unified setter
 	d_ocp_qp_set_all(hA, hB, hb, hQ, hS, hR, hq, hr, hidxbx, hlbx, hubx, hidxbu, hlbu, hubu, hC, hD, hlg, hug, hZl, hZu, hzl, hzu, hidxs, hlls, hlus, &qp);
 
-	// mark the inequality constr on x0 as an equality constr
-//	int *idxbxe0 = (int *) malloc(nx[0]*sizeof(int));
-//	for(ii=0; ii<=nx[0]; ii++)
-//		idxbxe0[ii] = ii;
-//	d_ocp_qp_set_idxbxe(0, idxbxe0, &qp);
+	// additional single setters
+
+	// mark the inequality constr to be considered as equality constr
 	for(ii=0; ii<=N; ii++)
 		{
 		d_ocp_qp_set_idxe(ii, hidxe[ii], &qp);
@@ -215,6 +217,8 @@ int main()
 		d_ocp_qp_set_ubx_mask(ii, hubx_mask[ii], &qp);
 		d_ocp_qp_set_lg_mask(ii, hlg_mask[ii], &qp);
 		d_ocp_qp_set_ug_mask(ii, hug_mask[ii], &qp);
+		d_ocp_qp_set_lls_mask(ii, hlls_mask[ii], &qp);
+		d_ocp_qp_set_lus_mask(ii, hlus_mask[ii], &qp);
 		}
 
 //	d_ocp_qp_codegen("examples/c/data/test_d_ocp_data.c", "a", &dim, &qp);
@@ -314,7 +318,6 @@ int main()
 	d_dense_qp_ipm_arg_set_mu0(&mu0, &arg);
 	d_dense_qp_ipm_arg_set_iter_max(&iter_max, &arg);
 	d_dense_qp_ipm_arg_set_alpha_min(&alpha_min, &arg);
-	d_dense_qp_ipm_arg_set_mu0(&mu0, &arg);
 	d_dense_qp_ipm_arg_set_tol_stat(&tol_stat, &arg);
 	d_dense_qp_ipm_arg_set_tol_eq(&tol_eq, &arg);
 	d_dense_qp_ipm_arg_set_tol_ineq(&tol_ineq, &arg);
@@ -370,7 +373,7 @@ int main()
 	double time_red_eq_dof = hpipm_toc(&timer) / nrep;
 
 /************************************************
-* part cond
+* cond
 ************************************************/
 
 	hpipm_tic(&timer);
@@ -399,7 +402,7 @@ int main()
 	double time_ipm = hpipm_toc(&timer) / nrep;
 
 /************************************************
-* part expand
+* expand
 ************************************************/
 
 	hpipm_tic(&timer);
@@ -506,7 +509,7 @@ int main()
 	printf("\nipm residuals max: res_g = %e, res_b = %e, res_d = %e, res_m = %e\n", res_stat, res_eq, res_ineq, res_comp);
 
 	printf("\nipm iter = %d\n", iter);
-	printf("\nalpha_aff\tmu_aff\t\tsigma\t\talpha_prim\talpha_dual\tmu\t\tres_stat\tres_eq\t\tres_ineq\tres_comp\tobj\t\tlq fact\t\titref pred\titref corr\tlin res stat\tlin res eq\tlin res ineq\tlin res comp\n");
+	printf("\nalpha_aff\tmu_aff\t\tsigma\t\talpha_prim\talpha_dual\tmu\t\tres_stat\tres_eq\t\tres_ineq\tres_comp\tdual_gap\tobj\t\tlq fact\t\titref pred\titref corr\tlin res stat\tlin res eq\tlin res ineq\tlin res comp\n");
 	d_print_exp_tran_mat(stat_m, iter+1, stat, stat_m);
 
 	printf("\neq dof red time = %e [s]\n\n", time_red_eq_dof);
@@ -529,7 +532,6 @@ int main()
 	free(qp_sol_mem);
 	free(qp_sol_mem2);
 	free(qp_sol_mem3);
-//	free(idxbxe0);
     free(qp_red_arg_mem);
     free(qp_red_work_mem);
 	free(cond_arg_mem);
