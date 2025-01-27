@@ -80,7 +80,7 @@ void OCP_QP_IPM_ARG_SET_DEFAULT(enum HPIPM_MODE mode, struct OCP_QP_IPM_ARG *arg
 		res_b_max = 1e0; // not used
 		res_d_max = 1e0; // not used
 		res_m_max = 1e-8;
-		dual_gap_max = 1e0;
+		dual_gap_max = 1e15;
 		iter_max = 15;
 		stat_max = 15;
 		pred_corr = 1;
@@ -110,7 +110,7 @@ void OCP_QP_IPM_ARG_SET_DEFAULT(enum HPIPM_MODE mode, struct OCP_QP_IPM_ARG *arg
 		res_b_max = 1e-8;
 		res_d_max = 1e-8;
 		res_m_max = 1e-8;
-		dual_gap_max = 1e0;
+		dual_gap_max = 1e15;
 		iter_max = 15;
 		stat_max = 15;
 		pred_corr = 1;
@@ -140,7 +140,7 @@ void OCP_QP_IPM_ARG_SET_DEFAULT(enum HPIPM_MODE mode, struct OCP_QP_IPM_ARG *arg
 		res_b_max = 1e-8;
 		res_d_max = 1e-8;
 		res_m_max = 1e-8;
-		dual_gap_max = 1e0;
+		dual_gap_max = 1e15;
 		iter_max = 30;
 		stat_max = 30;
 		pred_corr = 1;
@@ -170,7 +170,7 @@ void OCP_QP_IPM_ARG_SET_DEFAULT(enum HPIPM_MODE mode, struct OCP_QP_IPM_ARG *arg
 		res_b_max = 1e-8;
 		res_d_max = 1e-8;
 		res_m_max = 1e-8;
-		dual_gap_max = 1e0;
+		dual_gap_max = 1e15;
 		iter_max = 100;
 		stat_max = 100;
 		pred_corr = 1;
@@ -1122,39 +1122,47 @@ void OCP_QP_IPM_WS_CREATE(struct OCP_QP_DIM *dim, struct OCP_QP_IPM_ARG *arg, st
 void OCP_QP_IPM_GET(char *field, struct OCP_QP_IPM_WS *ws, void *value)
 	{
 	if(hpipm_strcmp(field, "status"))
-		{ 
+		{
 		OCP_QP_IPM_GET_STATUS(ws, value);
 		}
 	else if(hpipm_strcmp(field, "iter"))
-		{ 
+		{
 		OCP_QP_IPM_GET_ITER(ws, value);
 		}
 	else if(hpipm_strcmp(field, "max_res_stat"))
-		{ 
+		{
 		OCP_QP_IPM_GET_MAX_RES_STAT(ws, value);
 		}
 	else if(hpipm_strcmp(field, "max_res_eq"))
-		{ 
+		{
 		OCP_QP_IPM_GET_MAX_RES_EQ(ws, value);
 		}
 	else if(hpipm_strcmp(field, "max_res_ineq"))
-		{ 
+		{
 		OCP_QP_IPM_GET_MAX_RES_INEQ(ws, value);
 		}
 	else if(hpipm_strcmp(field, "max_res_comp"))
-		{ 
+		{
 		OCP_QP_IPM_GET_MAX_RES_COMP(ws, value);
 		}
+	else if(hpipm_strcmp(field, "dual_gap"))
+		{
+		OCP_QP_IPM_GET_DUAL_GAP(ws, value);
+		}
 	else if(hpipm_strcmp(field, "obj"))
-		{ 
+		{
 		OCP_QP_IPM_GET_OBJ(ws, value);
 		}
+	else if(hpipm_strcmp(field, "tau_iter"))
+		{
+		OCP_QP_IPM_GET_TAU_ITER(ws, value);
+		}
 	else if(hpipm_strcmp(field, "stat"))
-		{ 
+		{
 		OCP_QP_IPM_GET_STAT(ws, value);
 		}
 	else if(hpipm_strcmp(field, "stat_m"))
-		{ 
+		{
 		OCP_QP_IPM_GET_STAT_M(ws, value);
 		}
 	else 
@@ -1217,9 +1225,25 @@ void OCP_QP_IPM_GET_MAX_RES_COMP(struct OCP_QP_IPM_WS *ws, REAL *res_comp)
 
 
 
+void OCP_QP_IPM_GET_DUAL_GAP(struct OCP_QP_IPM_WS *ws, REAL *dual_gap)
+	{
+	*dual_gap = ws->res->dual_gap;
+	return;
+	}
+
+
+
 void OCP_QP_IPM_GET_OBJ(struct OCP_QP_IPM_WS *ws, REAL *obj)
 	{
 	*obj = ws->res->obj;
+	return;
+	}
+
+
+
+void OCP_QP_IPM_GET_TAU_ITER(struct OCP_QP_IPM_WS *ws, REAL *tau_iter)
+	{
+	*tau_iter = ws->core_workspace->tau_iter;
 	return;
 	}
 
@@ -1828,6 +1852,11 @@ void OCP_QP_IPM_ABS_STEP(int kk, struct OCP_QP *qp, struct OCP_QP_SOL *qp_sol, s
 
 	// tau_min as barrier parameter for affine step
 	COMPUTE_TAU_MIN_QP(cws);
+	if(ws->mask_constr)
+		{
+		// mask out disregarded constraints
+		VECMUL(cws->nc, qp->d_mask, 0, ws->res->res_m, 0, ws->res->res_m, 0);
+		}
 
 	// fact solve
 //d_ocp_qp_print(ws->qp_step->dim, ws->qp_step);
@@ -2002,6 +2031,11 @@ void OCP_QP_IPM_DELTA_STEP(int kk, struct OCP_QP *qp, struct OCP_QP_SOL *qp_sol,
 
 	// tau_min as barrier parameter for affine step
 	COMPUTE_TAU_MIN_QP(cws);
+	if(ws->mask_constr)
+		{
+		// mask out disregarded constraints
+		VECMUL(cws->nc, qp->d_mask, 0, ws->res->res_m, 0, ws->res->res_m, 0);
+		}
 
 	// fact and solve kkt
 	if(ws->lq_fact==0)
@@ -2551,6 +2585,8 @@ void OCP_QP_IPM_SOLVE(struct OCP_QP *qp, struct OCP_QP_SOL *qp_sol, struct OCP_Q
 			OCP_QP_RES_COMPUTE(qp, qp_sol, ws->res, ws->res_workspace);
 			// XXX no constraints, so no mask
 			OCP_QP_RES_COMPUTE_INF_NORM(ws->res);
+			ws->res->res_mu = ws->res->res_mu_sum * cws->nc_mask_inv;
+			cws->mu = ws->res->res_mu;
 			if(0<ws->stat_max)
 				{
 				stat[6] = qp_res_max[0];
@@ -2560,7 +2596,6 @@ void OCP_QP_IPM_SOLVE(struct OCP_QP *qp, struct OCP_QP_SOL *qp_sol, struct OCP_Q
 				stat[10] = ws->res->dual_gap;
 				stat[11] = ws->res->obj;
 				}
-			cws->mu = ws->res->res_mu;
 			}
 		ws->iter = 0;
 #ifdef USE_C99_MATH
@@ -2693,6 +2728,7 @@ void OCP_QP_IPM_SOLVE(struct OCP_QP *qp, struct OCP_QP_SOL *qp_sol, struct OCP_Q
 		VECMUL(cws->nc, qp->d_mask, 0, ws->res->res_d, 0, ws->res->res_d, 0);
 		VECMUL(cws->nc, qp->d_mask, 0, ws->res->res_m, 0, ws->res->res_m, 0);
 		}
+	ws->res->res_mu = ws->res->res_mu_sum * cws->nc_mask_inv;
 	cws->mu = ws->res->res_mu;
 	OCP_QP_RES_COMPUTE_INF_NORM(ws->res);
 	// save infinity norm of residuals
@@ -2712,13 +2748,14 @@ void OCP_QP_IPM_SOLVE(struct OCP_QP *qp, struct OCP_QP_SOL *qp_sol, struct OCP_Q
 	// relative (delta) IPM formulation
 
 	// IPM loop
-	for(kk=0; kk<arg->iter_max & \
-			cws->alpha>arg->alpha_min & \
-			(qp_res_max[0]>arg->res_g_max | \
-			qp_res_max[1]>arg->res_b_max | \
-			qp_res_max[2]>arg->res_d_max | \
+	for(kk=0; \
+			kk < arg->iter_max & \
+			cws->alpha > arg->alpha_min & \
+			(qp_res_max[0] > arg->res_g_max | \
+			qp_res_max[1] > arg->res_b_max | \
+			qp_res_max[2] > arg->res_d_max | \
 			fabs(qp_res_max[3]-tau_min) > arg->res_m_max | \
-			ws->res->dual_gap>arg->dual_gap_max) \
+			ws->res->dual_gap > arg->dual_gap_max) \
 			; kk++)
 		{
 
@@ -2735,6 +2772,7 @@ void OCP_QP_IPM_SOLVE(struct OCP_QP *qp, struct OCP_QP_SOL *qp_sol, struct OCP_Q
 			VECMUL(cws->nc, qp->d_mask, 0, ws->res->res_d, 0, ws->res->res_d, 0);
 			VECMUL(cws->nc, qp->d_mask, 0, ws->res->res_m, 0, ws->res->res_m, 0);
 			}
+		ws->res->res_mu = ws->res->res_mu_sum * cws->nc_mask_inv;
 		cws->mu = ws->res->res_mu;
 		OCP_QP_RES_COMPUTE_INF_NORM(ws->res);
 		// save infinity norm of residuals

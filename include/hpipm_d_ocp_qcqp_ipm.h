@@ -64,9 +64,11 @@ struct d_ocp_qcqp_ipm_arg
 	double res_b_max; // exit cond on inf norm of residuals
 	double res_d_max; // exit cond on inf norm of residuals
 	double res_m_max; // exit cond on inf norm of residuals
+	double dual_gap_max; // exit cond on duality gap
 	double reg_prim; // reg of primal hessian
 	double lam_min; // min value in lam vector
 	double t_min; // min value in t vector
+	double tau_min; // min value of barrier parameter
 	int iter_max; // exit cond in iter number
 	int stat_max; // iterations saved in stat
 	int pred_corr; // use Mehrotra's predictor-corrector IPM algirthm
@@ -127,6 +129,8 @@ void d_ocp_qcqp_ipm_arg_set_tol_eq(double *value, struct d_ocp_qcqp_ipm_arg *arg
 void d_ocp_qcqp_ipm_arg_set_tol_ineq(double *value, struct d_ocp_qcqp_ipm_arg *arg);
 // set exit tolerance on complementarity condition
 void d_ocp_qcqp_ipm_arg_set_tol_comp(double *value, struct d_ocp_qcqp_ipm_arg *arg);
+// set exit tolerance on dual gap
+void d_ocp_qcqp_ipm_arg_set_tol_dual_gap(double *tol_dual_gap, struct d_ocp_qcqp_ipm_arg *arg);
 // set regularization of primal variables
 void d_ocp_qcqp_ipm_arg_set_reg_prim(double *value, struct d_ocp_qcqp_ipm_arg *arg);
 // set warm start: 0 no warm start, 1 primal var
@@ -145,6 +149,8 @@ void d_ocp_qcqp_ipm_arg_set_comp_res_pred(int *value, struct d_ocp_qcqp_ipm_arg 
 void d_ocp_qcqp_ipm_arg_set_lam_min(double *value, struct d_ocp_qcqp_ipm_arg *arg);
 // min value of t in the solution
 void d_ocp_qcqp_ipm_arg_set_t_min(double *value, struct d_ocp_qcqp_ipm_arg *arg);
+// min value of barrier parameter
+void d_ocp_qcqp_ipm_arg_set_tau_min(double *value, struct d_ocp_qcqp_ipm_arg *arg);
 // use different step for primal and dual variables
 void d_ocp_qcqp_ipm_arg_set_split_step(int *value, struct d_ocp_qcqp_ipm_arg *arg);
 // clip t and lam: 0 no, 1 in Gamma computation, 2 in solution
@@ -170,6 +176,8 @@ void d_ocp_qcqp_ipm_get_max_res_eq(struct d_ocp_qcqp_ipm_ws *ws, double *res_eq)
 void d_ocp_qcqp_ipm_get_max_res_ineq(struct d_ocp_qcqp_ipm_ws *ws, double *res_ineq);
 //
 void d_ocp_qcqp_ipm_get_max_res_comp(struct d_ocp_qcqp_ipm_ws *ws, double *res_comp);
+//
+void d_ocp_qcqp_ipm_get_dual_gap(struct d_ocp_qcqp_ipm_ws *ws, double *dual_gap);
 //
 void d_ocp_qcqp_ipm_get_obj(struct d_ocp_qcqp_ipm_ws *ws, double *obj);
 //

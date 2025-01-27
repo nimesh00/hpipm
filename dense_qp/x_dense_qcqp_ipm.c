@@ -105,7 +105,7 @@ void DENSE_QCQP_IPM_ARG_SET_DEFAULT(enum HPIPM_MODE mode, struct DENSE_QCQP_IPM_
 
 	DENSE_QP_IPM_ARG_SET_DEFAULT(mode, arg->qp_arg);
 
-	REAL mu0, alpha_min, res_g, res_b, res_d, res_m, reg_prim, reg_dual, lam_min, t_min;
+	REAL mu0, alpha_min, res_g, res_b, res_d, res_m, dual_gap_max, reg_prim, reg_dual, lam_min, t_min, tau_min;
 	int iter_max, stat_max, pred_corr, cond_pred_corr, itref_pred_max, itref_corr_max, lq_fact, scale, warm_start, abs_form, comp_res_exit, comp_res_pred, split_step, t_lam_min;
 
 	if(mode==SPEED_ABS)
@@ -116,6 +116,7 @@ void DENSE_QCQP_IPM_ARG_SET_DEFAULT(enum HPIPM_MODE mode, struct DENSE_QCQP_IPM_
 		res_b = 1e0;
 		res_d = 1e0;
 		res_m = 1e-8;
+		dual_gap_max = 1e15;
 		iter_max = 15;
 		stat_max = 15;
 		pred_corr = 1;
@@ -128,6 +129,7 @@ void DENSE_QCQP_IPM_ARG_SET_DEFAULT(enum HPIPM_MODE mode, struct DENSE_QCQP_IPM_
 		scale = 0;
 		lam_min = 1e-16;
 		t_min = 1e-16;
+		tau_min = 1e-16;
 		warm_start = 0;
 		abs_form = 1;
 		comp_res_exit = 0;
@@ -143,6 +145,7 @@ void DENSE_QCQP_IPM_ARG_SET_DEFAULT(enum HPIPM_MODE mode, struct DENSE_QCQP_IPM_
 		res_b = 1e-8;
 		res_d = 1e-8;
 		res_m = 1e-8;
+		dual_gap_max = 1e15;
 		iter_max = 15;
 		stat_max = 15;
 		pred_corr = 1;
@@ -155,6 +158,7 @@ void DENSE_QCQP_IPM_ARG_SET_DEFAULT(enum HPIPM_MODE mode, struct DENSE_QCQP_IPM_
 		scale = 0;
 		lam_min = 1e-16;
 		t_min = 1e-16;
+		tau_min = 1e-16;
 		warm_start = 0;
 		abs_form = 0;
 		comp_res_exit = 1;
@@ -170,6 +174,7 @@ void DENSE_QCQP_IPM_ARG_SET_DEFAULT(enum HPIPM_MODE mode, struct DENSE_QCQP_IPM_
 		res_b = 1e-8;
 		res_d = 1e-8;
 		res_m = 1e-8;
+		dual_gap_max = 1e15;
 		iter_max = 30;
 		stat_max = 30;
 		pred_corr = 1;
@@ -182,6 +187,7 @@ void DENSE_QCQP_IPM_ARG_SET_DEFAULT(enum HPIPM_MODE mode, struct DENSE_QCQP_IPM_
 		scale = 0;
 		lam_min = 1e-16;
 		t_min = 1e-16;
+		tau_min = 1e-16;
 		warm_start = 0;
 		abs_form = 0;
 		comp_res_exit = 1;
@@ -197,6 +203,7 @@ void DENSE_QCQP_IPM_ARG_SET_DEFAULT(enum HPIPM_MODE mode, struct DENSE_QCQP_IPM_
 		res_b = 1e-8;
 		res_d = 1e-8;
 		res_m = 1e-8;
+		dual_gap_max = 1e15;
 		iter_max = 100;
 		stat_max = 100;
 		pred_corr = 1;
@@ -209,6 +216,7 @@ void DENSE_QCQP_IPM_ARG_SET_DEFAULT(enum HPIPM_MODE mode, struct DENSE_QCQP_IPM_
 		scale = 0;
 		lam_min = 1e-16;
 		t_min = 1e-16;
+		tau_min = 1e-16;
 		warm_start = 0;
 		abs_form = 0;
 		comp_res_exit = 1;
@@ -231,6 +239,7 @@ void DENSE_QCQP_IPM_ARG_SET_DEFAULT(enum HPIPM_MODE mode, struct DENSE_QCQP_IPM_
 	DENSE_QCQP_IPM_ARG_SET_TOL_EQ(&res_b, arg);
 	DENSE_QCQP_IPM_ARG_SET_TOL_INEQ(&res_d, arg);
 	DENSE_QCQP_IPM_ARG_SET_TOL_COMP(&res_m, arg);
+	DENSE_QCQP_IPM_ARG_SET_TOL_DUAL_GAP(&dual_gap_max, arg);
 	DENSE_QCQP_IPM_ARG_SET_ITER_MAX(&iter_max, arg);
 	arg->stat_max = stat_max;
 	DENSE_QCQP_IPM_ARG_SET_PRED_CORR(&pred_corr, arg);
@@ -245,6 +254,7 @@ void DENSE_QCQP_IPM_ARG_SET_DEFAULT(enum HPIPM_MODE mode, struct DENSE_QCQP_IPM_
 	arg->t_min = t_min;
 	DENSE_QCQP_IPM_ARG_SET_LAM_MIN(&lam_min, arg);
 	DENSE_QCQP_IPM_ARG_SET_T_MIN(&t_min, arg);
+	DENSE_QCQP_IPM_ARG_SET_TAU_MIN(&tau_min, arg);
 	DENSE_QCQP_IPM_ARG_SET_WARM_START(&warm_start, arg);
 	arg->abs_form = abs_form;
 	DENSE_QCQP_IPM_ARG_SET_COMP_RES_PRED(&comp_res_pred, arg);
@@ -289,6 +299,10 @@ void DENSE_QCQP_IPM_ARG_SET(char *field, void *value, struct DENSE_QCQP_IPM_ARG 
 		{
 		DENSE_QCQP_IPM_ARG_SET_TOL_COMP(value, arg);
 		}
+	else if(hpipm_strcmp(field, "tol_dual_gap")) 
+		{
+		DENSE_QCQP_IPM_ARG_SET_TOL_DUAL_GAP(value, arg);
+		}
 	else if(hpipm_strcmp(field, "reg_prim")) 
 		{
 		DENSE_QCQP_IPM_ARG_SET_REG_PRIM(value, arg);
@@ -324,6 +338,10 @@ void DENSE_QCQP_IPM_ARG_SET(char *field, void *value, struct DENSE_QCQP_IPM_ARG 
 	else if(hpipm_strcmp(field, "t_min")) 
 		{
 		DENSE_QCQP_IPM_ARG_SET_T_MIN(value, arg);
+		}
+	else if(hpipm_strcmp(field, "tau_min")) 
+		{
+		DENSE_QCQP_IPM_ARG_SET_TAU_MIN(value, arg);
 		}
 	else if(hpipm_strcmp(field, "split_step")) 
 		{
@@ -408,6 +426,15 @@ void DENSE_QCQP_IPM_ARG_SET_TOL_COMP(REAL *value, struct DENSE_QCQP_IPM_ARG *arg
 
 
 
+void DENSE_QCQP_IPM_ARG_SET_TOL_DUAL_GAP(REAL *value, struct DENSE_QCQP_IPM_ARG *arg)
+	{
+	arg->dual_gap_max = *value;
+	DENSE_QP_IPM_ARG_SET_TOL_DUAL_GAP(value, arg->qp_arg);
+	return;
+	}
+
+
+
 void DENSE_QCQP_IPM_ARG_SET_REG_PRIM(REAL *value, struct DENSE_QCQP_IPM_ARG *arg)
 	{
 	arg->reg_prim = *value;
@@ -484,6 +511,15 @@ void DENSE_QCQP_IPM_ARG_SET_T_MIN(REAL *value, struct DENSE_QCQP_IPM_ARG *arg)
 	{
 	arg->t_min = *value;
 	DENSE_QP_IPM_ARG_SET_T_MIN(value, arg->qp_arg);
+	return;
+	}
+
+
+
+void DENSE_QCQP_IPM_ARG_SET_TAU_MIN(REAL *value, struct DENSE_QCQP_IPM_ARG *arg)
+	{
+	arg->tau_min = *value;
+	DENSE_QP_IPM_ARG_SET_TAU_MIN(value, arg->qp_arg);
 	return;
 	}
 
@@ -659,6 +695,10 @@ void DENSE_QCQP_IPM_GET(char *field, struct DENSE_QCQP_IPM_WS *ws, void *value)
 		{ 
 		DENSE_QCQP_IPM_GET_MAX_RES_COMP(ws, value);
 		}
+	else if(hpipm_strcmp(field, "dual_gap"))
+		{ 
+		DENSE_QCQP_IPM_GET_DUAL_GAP(ws, value);
+		}
 	else if(hpipm_strcmp(field, "obj"))
 		{ 
 		DENSE_QCQP_IPM_GET_OBJ(ws, value);
@@ -726,6 +766,14 @@ void DENSE_QCQP_IPM_GET_MAX_RES_INEQ(struct DENSE_QCQP_IPM_WS *ws, REAL *res_ine
 void DENSE_QCQP_IPM_GET_MAX_RES_COMP(struct DENSE_QCQP_IPM_WS *ws, REAL *res_comp)
 	{
 	*res_comp = ws->qcqp_res->res_max[3];
+	return;
+	}
+
+
+
+void DENSE_QCQP_IPM_GET_DUAL_GAP(struct DENSE_QCQP_IPM_WS *ws, REAL *dual_gap)
+	{
+	*dual_gap = ws->qcqp_res->dual_gap;
 	return;
 	}
 
@@ -1192,6 +1240,7 @@ void DENSE_QCQP_IPM_SOLVE(struct DENSE_QCQP *qcqp, struct DENSE_QCQP_SOL *qcqp_s
 	REAL *stat = qp_ws->stat;
 	int stat_m = qp_ws->stat_m;
 	int stat_max = qp_ws->stat_max;
+	REAL tau_min = qp_arg->tau_min;
 
 //	int qcqp_nv = qcqp->dim->nv + 2*qcqp->dim->ns;
 //	int qcqp_ne = qcqp->dim->ne;
@@ -1202,6 +1251,7 @@ void DENSE_QCQP_IPM_SOLVE(struct DENSE_QCQP *qcqp, struct DENSE_QCQP_SOL *qcqp_s
 	cws->lam_min = qp_arg->lam_min;
 	cws->t_min = qp_arg->t_min;
 	cws->t_min_inv = qp_arg->t_min>0.0 ? 1.0/qp_arg->t_min : 1e30;
+	cws->tau_min = qp_arg->tau_min;
 	cws->split_step = qp_arg->split_step;
 	cws->t_lam_min = qp_arg->t_lam_min;
 
@@ -1310,6 +1360,8 @@ void DENSE_QCQP_IPM_SOLVE(struct DENSE_QCQP *qcqp, struct DENSE_QCQP_SOL *qcqp_s
 			DENSE_QCQP_RES_COMPUTE(qcqp, qcqp_sol, qcqp_res, qcqp_res_ws);
 			// XXX no constraints, so no mask
 			DENSE_QCQP_RES_COMPUTE_INF_NORM(qcqp_res);
+			qcqp_res->res_mu = qcqp_res->res_mu_sum * cws->nc_mask_inv;
+			cws->mu = qcqp_res->res_mu;
 			// save infinity norm of residuals
 			if(0<stat_max)
 				{
@@ -1319,7 +1371,6 @@ void DENSE_QCQP_IPM_SOLVE(struct DENSE_QCQP *qcqp, struct DENSE_QCQP_SOL *qcqp_s
 				stat[9] = qcqp_res_max[3];
 				stat[10] = qcqp_res->obj;
 				}
-			cws->mu = qcqp_res->res_mu;
 			}
 		// save info before return
 		qcqp_ws->iter = 0;
@@ -1380,7 +1431,8 @@ void DENSE_QCQP_IPM_SOLVE(struct DENSE_QCQP *qcqp, struct DENSE_QCQP_SOL *qcqp_s
 		for(kk=0; \
 				kk < qcqp_arg->iter_max & \
 				cws->alpha > qcqp_arg->alpha_min & \
-				mu > qcqp_arg->res_m_max; kk++)
+				fabs(mu-tau_min) > qcqp_arg->res_m_max \
+				; kk++)
 			{
 
 			// compute delta step
@@ -1440,8 +1492,9 @@ void DENSE_QCQP_IPM_SOLVE(struct DENSE_QCQP *qcqp, struct DENSE_QCQP_SOL *qcqp_s
 		VECMUL(cws->nc, qp->d_mask, 0, qcqp_res->res_m, 0, qcqp_res->res_m, 0);
 		}
 	DENSE_QCQP_RES_COMPUTE_INF_NORM(qcqp_res);
-	DENSE_QCQP_RES_CONV_QP_RES(qcqp_res, qp_ws->res);
+	qcqp_res->res_mu = qcqp_res->res_mu_sum * cws->nc_mask_inv;
 	cws->mu = qcqp_res->res_mu;
+	DENSE_QCQP_RES_CONV_QP_RES(qcqp_res, qp_ws->res);
 	// save infinity norm of residuals
 	if(0<stat_max)
 		{
@@ -1461,7 +1514,9 @@ void DENSE_QCQP_IPM_SOLVE(struct DENSE_QCQP *qcqp, struct DENSE_QCQP_SOL *qcqp_s
 			(qcqp_res_max[0] > qcqp_arg->res_g_max | \
 			qcqp_res_max[1] > qcqp_arg->res_b_max | \
 			qcqp_res_max[2] > qcqp_arg->res_d_max | \
-			qcqp_res_max[3] > qcqp_arg->res_m_max); kk++)
+			fabs(qcqp_res_max[3]-tau_min) > qcqp_arg->res_m_max | \
+			qcqp_res->dual_gap > qcqp_arg->dual_gap_max) \
+			; kk++)
 		{
 
 		// hessian is updated with quad constr: can not reuse hessian factorization !!!
@@ -1491,8 +1546,9 @@ void DENSE_QCQP_IPM_SOLVE(struct DENSE_QCQP *qcqp, struct DENSE_QCQP_SOL *qcqp_s
 			VECMUL(cws->nc, qp->d_mask, 0, qcqp_res->res_m, 0, qcqp_res->res_m, 0);
 			}
 		DENSE_QCQP_RES_COMPUTE_INF_NORM(qcqp_res);
-		DENSE_QCQP_RES_CONV_QP_RES(qcqp_res, qp_ws->res);
+		qcqp_res->res_mu = qcqp_res->res_mu_sum * cws->nc_mask_inv;
 		cws->mu = qcqp_res->res_mu;
+		DENSE_QCQP_RES_CONV_QP_RES(qcqp_res, qp_ws->res);
 		// save infinity norm of residuals
 		if(kk+1<stat_max)
 			{

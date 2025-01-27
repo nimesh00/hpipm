@@ -159,6 +159,7 @@
 #define DENSE_QP_IPM_ARG_SET_COMPUTE_OBJ s_dense_qp_ipm_arg_set_compute_obj
 #define DENSE_QP_IPM_ARG_SET_SPLIT_STEP s_dense_qp_ipm_arg_set_split_step
 #define DENSE_QP_IPM_ARG_SET_T_LAM_MIN s_dense_qp_ipm_arg_set_t_lam_min
+#define DENSE_QP_IPM_ARG_SET_T0_INIT s_dense_qp_ipm_arg_set_t0_init
 // ipm
 #define DENSE_QP_IPM_WS_MEMSIZE s_dense_qp_ipm_ws_memsize
 #define DENSE_QP_IPM_WS_CREATE s_dense_qp_ipm_ws_create
@@ -169,7 +170,9 @@
 #define DENSE_QP_IPM_GET_MAX_RES_EQ s_dense_qp_ipm_get_max_res_eq
 #define DENSE_QP_IPM_GET_MAX_RES_INEQ s_dense_qp_ipm_get_max_res_ineq
 #define DENSE_QP_IPM_GET_MAX_RES_COMP s_dense_qp_ipm_get_max_res_comp
+#define DENSE_QP_IPM_GET_DUAL_GAP s_dense_qp_ipm_get_dual_gap
 #define DENSE_QP_IPM_GET_OBJ s_dense_qp_ipm_get_obj
+#define DENSE_QP_IPM_GET_TAU_ITER s_dense_qp_ipm_get_tau_iter
 #define DENSE_QP_IPM_GET_STAT s_dense_qp_ipm_get_stat
 #define DENSE_QP_IPM_GET_STAT_M s_dense_qp_ipm_get_stat_m
 #define DENSE_QP_INIT_VAR s_dense_qp_init_var

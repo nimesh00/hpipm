@@ -214,7 +214,11 @@ void d_ocp_qp_ipm_get_max_res_ineq(struct d_ocp_qp_ipm_ws *ws, double *res_ineq)
 //
 void d_ocp_qp_ipm_get_max_res_comp(struct d_ocp_qp_ipm_ws *ws, double *res_comp);
 //
+void d_ocp_qp_ipm_get_dual_gap(struct d_ocp_qp_ipm_ws *ws, double *dual_gap);
+//
 void d_ocp_qp_ipm_get_obj(struct d_ocp_qp_ipm_ws *ws, double *obj);
+//
+void d_ocp_qp_ipm_get_tau_iter(struct d_ocp_qp_ipm_ws *ws, double *tau_iter);
 //
 void d_ocp_qp_ipm_get_stat(struct d_ocp_qp_ipm_ws *ws, double **stat);
 //
