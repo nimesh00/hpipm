@@ -87,6 +87,53 @@ void COMPUTE_GAMMA_GAMMA_QP(REAL *res_d, REAL *res_m, struct CORE_QP_IPM_WORKSPA
 
 
 
+void COMPUTE_GGAMMA_QP(struct CORE_QP_IPM_WORKSPACE *cws)
+	{
+
+	int nc = cws->nc;
+
+	REAL *lam = cws->lam;
+	REAL *t = cws->t;
+	REAL *t_inv = cws->t_inv;
+	REAL *Gamma = cws->Gamma;
+	REAL lam_min = cws->lam_min;
+	REAL t_min = cws->t_min;
+	REAL t_min_inv = cws->t_min_inv;
+	REAL lam0, t0, t_inv_tmp, lam_tmp;
+
+	// local variables
+	int ii;
+
+//printf("\nGamma\n");
+	if(cws->t_lam_min==1)
+		{
+		for(ii=0; ii<nc; ii++)
+			{
+			lam0 = lam[ii];
+			t0 = t[ii];
+			t_inv[ii] = 1.0/t0;
+			t_inv_tmp = t0<t_min ? t_min_inv : t_inv[ii];
+			lam_tmp = lam0<lam_min ? lam_min : lam0;
+			Gamma[ii] = t_inv_tmp*lam_tmp;
+			}
+		}
+	else
+		{
+		for(ii=0; ii<nc; ii++)
+			{
+			lam0 = lam[ii];
+			t0 = t[ii];
+			t_inv[ii] = 1.0/t0;
+			Gamma[ii] = t_inv[ii]*lam0;
+			}
+		}
+
+	return;
+
+	}
+
+
+
 void COMPUTE_GAMMA_QP(REAL *res_d, REAL *res_m, struct CORE_QP_IPM_WORKSPACE *cws)
 	{
 
@@ -318,6 +365,56 @@ void UPDATE_VAR_QP(struct CORE_QP_IPM_WORKSPACE *cws)
 			t_bkp[ii] = t[ii];
 			t[ii] += tmp_alpha_prim * dt[ii];
 			}
+		}
+
+	return;
+
+	}
+
+
+
+void BACKUP_VAR_QP(struct CORE_QP_IPM_WORKSPACE *cws)
+	{
+	
+	// extract workspace members
+	int nv = cws->nv;
+	int ne = cws->ne;
+	int nc = cws->nc;
+
+	REAL *v = cws->v;
+	REAL *pi = cws->pi;
+	REAL *lam = cws->lam;
+	REAL *t = cws->t;
+	REAL *v_bkp = cws->v_bkp;
+	REAL *pi_bkp = cws->pi_bkp;
+	REAL *lam_bkp = cws->lam_bkp;
+	REAL *t_bkp = cws->t_bkp;
+
+	// local variables
+	int ii;
+
+	// backup v
+	for(ii=0; ii<nv; ii++)
+		{
+		v_bkp[ii] = v[ii];
+		}
+
+	// backup pi
+	for(ii=0; ii<ne; ii++)
+		{
+		pi_bkp[ii] = pi[ii];
+		}
+
+	// backup lam
+	for(ii=0; ii<nc; ii++)
+		{
+		lam_bkp[ii] = lam[ii];
+		}
+
+	// backup t
+	for(ii=0; ii<nc; ii++)
+		{
+		t_bkp[ii] = t[ii];
 		}
 
 	return;

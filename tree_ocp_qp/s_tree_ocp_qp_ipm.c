@@ -51,6 +51,7 @@
 #include <hpipm_s_tree_ocp_qp_kkt.h>
 #include <hpipm_s_core_qp_ipm.h>
 #include <hpipm_s_core_qp_ipm_aux.h>
+#include <hpipm_aux_string.h>
 #include <hpipm_aux_mem.h>
 
 
@@ -62,6 +63,7 @@
 
 #define AXPY blasfeo_saxpy
 #define BACKUP_RES_M s_backup_res_m
+#define BACKUP_VAR_QP s_backup_var_qp
 #define COMPUTE_ALPHA_QP s_compute_alpha_qp
 #define COMPUTE_CENTERING_CORRECTION_QP s_compute_centering_correction_qp
 #define COMPUTE_CENTERING_QP s_compute_centering_qp
@@ -127,8 +129,13 @@
 #define TREE_OCP_QP_IPM_ARG_SET_LAM_MIN s_tree_ocp_qp_ipm_arg_set_lam_min
 #define TREE_OCP_QP_IPM_ARG_SET_T_MIN s_tree_ocp_qp_ipm_arg_set_t_min
 #define TREE_OCP_QP_IPM_ARG_SET_TAU_MIN s_tree_ocp_qp_ipm_arg_set_tau_min
+#define TREE_OCP_QP_IPM_ARG_SET_LAM0_MIN s_tree_ocp_qp_ipm_arg_set_lam0_min
+#define TREE_OCP_QP_IPM_ARG_SET_T0_MIN s_tree_ocp_qp_ipm_arg_set_t0_min
 #define TREE_OCP_QP_IPM_ARG_SET_SPLIT_STEP s_tree_ocp_qp_ipm_arg_set_split_step
 #define TREE_OCP_QP_IPM_ARG_SET_T_LAM_MIN s_tree_ocp_qp_ipm_arg_set_t_lam_min
+#define TREE_OCP_QP_IPM_ARG_GET s_tree_ocp_qp_ipm_arg_get
+#define TREE_OCP_QP_IPM_ARG_GET_LAM0_MIN s_tree_ocp_qp_ipm_arg_get_lam0_min
+#define TREE_OCP_QP_IPM_ARG_GET_T0_MIN s_tree_ocp_qp_ipm_arg_get_t0_min
 // ipm
 #define TREE_OCP_QP_IPM_WS_MEMSIZE s_tree_ocp_qp_ipm_ws_memsize
 #define TREE_OCP_QP_IPM_WS_CREATE s_tree_ocp_qp_ipm_ws_create

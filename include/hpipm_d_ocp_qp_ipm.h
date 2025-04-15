@@ -68,13 +68,15 @@ struct d_ocp_qp_ipm_arg
 	double lam_min; // min value in lam vector
 	double t_min; // min value in t vector
 	double tau_min; // min value of barrier parameter
+	double lam0_min; // min value in lam vector at hot start initialization
+	double t0_min; // min value in t vector at hot start initialization
 	int iter_max; // exit cond in iter number
 	int stat_max; // iterations saved in stat
 	int pred_corr; // use Mehrotra's predictor-corrector IPM algirthm
 	int cond_pred_corr; // conditional Mehrotra's predictor-corrector
 	int itref_pred_max; // max number of iterative refinement steps for predictor step
 	int itref_corr_max; // max number of iterative refinement steps for corrector step
-	int warm_start; // 0 no warm start, 1 warm start primal sol, 2 warm start primal and dual sol
+	int warm_start; // 0 no warm start, 1 warm start primal sol, 2 warm start primal and dual sol, 3 hot start
 	int square_root_alg; // 0 classical Riccati, 1 square-root Riccati
 	int lq_fact; // 0 syrk+potrf, 1 mix, 2 lq (for square_root_alg==1)
 	int abs_form; // absolute IPM formulation
@@ -84,6 +86,8 @@ struct d_ocp_qp_ipm_arg
 	int split_step; // use different steps for primal and dual variables
 	int var_init_scheme; // variables initialization scheme
 	int t_lam_min; // clip t and lam: 0 no, 1 in Gamma computation, 2 in solution
+	int t0_init; // initialization scheme of slacks t (with corresponding multiplier lam=mu0/t): 0 sqrt(mu0), 1 1.0, 2 heuristic for primal feasibility
+	int update_fact_exit; // provide an updated factorization on exit (e.g. for use in sensitivity and feedback computation)
 	int mode;
 	hpipm_size_t memsize;
 	};
@@ -184,12 +188,26 @@ void d_ocp_qp_ipm_arg_set_lam_min(double *value, struct d_ocp_qp_ipm_arg *arg);
 void d_ocp_qp_ipm_arg_set_t_min(double *value, struct d_ocp_qp_ipm_arg *arg);
 // min value of tau in the solution
 void d_ocp_qp_ipm_arg_set_tau_min(double *value, struct d_ocp_qp_ipm_arg *arg);
+// min value of lam in the hot start initialization
+void d_ocp_qp_ipm_arg_set_lam0_min(double *value, struct d_ocp_qp_ipm_arg *arg);
+// min value of t in the hot start initialization
+void d_ocp_qp_ipm_arg_set_t0_min(double *value, struct d_ocp_qp_ipm_arg *arg);
 // set split step: 0 same step, 1 different step for primal and dual variables
 void d_ocp_qp_ipm_arg_set_split_step(int *value, struct d_ocp_qp_ipm_arg *arg);
 // variables initialization scheme
 void d_ocp_qp_ipm_arg_set_var_init_scheme(int *value, struct d_ocp_qp_ipm_arg *arg);
 // clip t and lam: 0 no, 1 in Gamma computation, 2 in solution
 void d_ocp_qp_ipm_arg_set_t_lam_min(int *value, struct d_ocp_qp_ipm_arg *arg);
+// initialization scheme of lambda and t slacks: 0 sqrt(mu0), 1 1.0, 2 heuristic for primal feasibility
+void d_ocp_qp_ipm_arg_set_t0_init(int *value, struct d_ocp_qp_ipm_arg *arg);
+// provide an updated factorization on exit (e.g. for use in sensitivity and feedback computation)
+void d_ocp_qp_ipm_arg_set_update_fact_exit(int *value, struct d_ocp_qp_ipm_arg *arg);
+//
+void d_ocp_qp_ipm_arg_get(char *field, struct d_ocp_qp_ipm_arg *arg, void *value);
+//
+void d_ocp_qp_ipm_arg_get_lam0_min(struct d_ocp_qp_ipm_arg *arg, double *value);
+//
+void d_ocp_qp_ipm_arg_get_t0_min(struct d_ocp_qp_ipm_arg *arg, double *value);
 //
 void d_ocp_qp_ipm_arg_deepcopy(struct d_ocp_qp_ipm_arg *arg_s, struct d_ocp_qp_ipm_arg *arg_d);
 
@@ -249,6 +267,8 @@ void d_ocp_qp_ipm_solve(struct d_ocp_qp *qp, struct d_ocp_qp_sol *qp_sol, struct
 void d_ocp_qp_ipm_predict(struct d_ocp_qp *qp, struct d_ocp_qp_sol *qp_sol, struct d_ocp_qp_ipm_arg *arg, struct d_ocp_qp_ipm_ws *ws);
 //
 void d_ocp_qp_ipm_sens(struct d_ocp_qp *qp, struct d_ocp_qp_sol *qp_sol, struct d_ocp_qp_ipm_arg *arg, struct d_ocp_qp_ipm_ws *ws);
+//
+void d_ocp_qp_ipm_sens_adj(struct d_ocp_qp *qp, struct d_ocp_qp_sol *qp_sol, struct d_ocp_qp_ipm_arg *arg, struct d_ocp_qp_ipm_ws *ws);
 
 
 

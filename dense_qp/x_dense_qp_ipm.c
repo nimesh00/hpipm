@@ -67,8 +67,8 @@ void DENSE_QP_IPM_ARG_CREATE(struct DENSE_QP_DIM *dim, struct DENSE_QP_IPM_ARG *
 void DENSE_QP_IPM_ARG_SET_DEFAULT(enum HPIPM_MODE mode, struct DENSE_QP_IPM_ARG *arg)
 	{
 
-	REAL mu0, alpha_min, res_g, res_b, res_d, res_m, dual_gap, reg_prim, reg_dual, lam_min, t_min, tau_min;
-	int iter_max, stat_max, pred_corr, cond_pred_corr, itref_pred_max, itref_corr_max, lq_fact, scale, warm_start, abs_form, comp_res_exit, comp_res_pred, kkt_fact_alg, remove_lin_dep_eq, compute_obj, split_step, t_lam_min, t0_init;
+	REAL mu0, alpha_min, res_g, res_b, res_d, res_m, dual_gap, reg_prim, reg_dual, lam_min, t_min, tau_min, lam0_min, t0_min;
+	int iter_max, stat_max, pred_corr, cond_pred_corr, itref_pred_max, itref_corr_max, lq_fact, scale, warm_start, abs_form, comp_res_exit, comp_res_pred, kkt_fact_alg, remove_lin_dep_eq, compute_obj, split_step, t_lam_min, t0_init, update_fact_exit;
 
 	if(mode==SPEED_ABS)
 		{
@@ -92,6 +92,8 @@ void DENSE_QP_IPM_ARG_SET_DEFAULT(enum HPIPM_MODE mode, struct DENSE_QP_IPM_ARG 
 		lam_min = 1e-16;
 		t_min = 1e-16;
 		tau_min = 1e-16;
+		lam0_min = 1e-9;
+		t0_min = 1e-9;
 		warm_start = 0;
 		abs_form = 1;
 		comp_res_exit = 0;
@@ -102,6 +104,7 @@ void DENSE_QP_IPM_ARG_SET_DEFAULT(enum HPIPM_MODE mode, struct DENSE_QP_IPM_ARG 
 		split_step = 1;
 		t_lam_min = 2;
 		t0_init = 2;
+		update_fact_exit = 1;
 		}
 	else if(mode==SPEED)
 		{
@@ -125,6 +128,8 @@ void DENSE_QP_IPM_ARG_SET_DEFAULT(enum HPIPM_MODE mode, struct DENSE_QP_IPM_ARG 
 		lam_min = 1e-16;
 		t_min = 1e-16;
 		tau_min = 1e-16;
+		lam0_min = 1e-9;
+		t0_min = 1e-9;
 		warm_start = 0;
 		abs_form = 0;
 		comp_res_exit = 1;
@@ -135,6 +140,7 @@ void DENSE_QP_IPM_ARG_SET_DEFAULT(enum HPIPM_MODE mode, struct DENSE_QP_IPM_ARG 
 		split_step = 1;
 		t_lam_min = 2;
 		t0_init = 2;
+		update_fact_exit = 1;
 		}
 	else if(mode==BALANCE)
 		{
@@ -158,6 +164,8 @@ void DENSE_QP_IPM_ARG_SET_DEFAULT(enum HPIPM_MODE mode, struct DENSE_QP_IPM_ARG 
 		lam_min = 1e-16;
 		t_min = 1e-16;
 		tau_min = 1e-16;
+		lam0_min = 1e-9;
+		t0_min = 1e-9;
 		warm_start = 0;
 		abs_form = 0;
 		comp_res_exit = 1;
@@ -168,6 +176,7 @@ void DENSE_QP_IPM_ARG_SET_DEFAULT(enum HPIPM_MODE mode, struct DENSE_QP_IPM_ARG 
 		split_step = 0;
 		t_lam_min = 2;
 		t0_init = 2;
+		update_fact_exit = 1;
 		}
 	else if(mode==ROBUST)
 		{
@@ -191,6 +200,8 @@ void DENSE_QP_IPM_ARG_SET_DEFAULT(enum HPIPM_MODE mode, struct DENSE_QP_IPM_ARG 
 		lam_min = 1e-16;
 		t_min = 1e-16;
 		tau_min = 1e-16;
+		lam0_min = 1e-9;
+		t0_min = 1e-9;
 		warm_start = 0;
 		abs_form = 0;
 		comp_res_exit = 1;
@@ -201,6 +212,7 @@ void DENSE_QP_IPM_ARG_SET_DEFAULT(enum HPIPM_MODE mode, struct DENSE_QP_IPM_ARG 
 		split_step = 0;
 		t_lam_min = 2;
 		t0_init = 2;
+		update_fact_exit = 1;
 		}
 	else
 		{
@@ -231,6 +243,8 @@ void DENSE_QP_IPM_ARG_SET_DEFAULT(enum HPIPM_MODE mode, struct DENSE_QP_IPM_ARG 
 	DENSE_QP_IPM_ARG_SET_LAM_MIN(&lam_min, arg);
 	DENSE_QP_IPM_ARG_SET_T_MIN(&t_min, arg);
 	DENSE_QP_IPM_ARG_SET_TAU_MIN(&tau_min, arg);
+	DENSE_QP_IPM_ARG_SET_LAM0_MIN(&lam0_min, arg);
+	DENSE_QP_IPM_ARG_SET_T0_MIN(&t0_min, arg);
 	DENSE_QP_IPM_ARG_SET_WARM_START(&warm_start, arg);
 	arg->abs_form = abs_form;
 	DENSE_QP_IPM_ARG_SET_COMP_RES_EXIT(&comp_res_exit, arg);
@@ -242,6 +256,7 @@ void DENSE_QP_IPM_ARG_SET_DEFAULT(enum HPIPM_MODE mode, struct DENSE_QP_IPM_ARG 
 	DENSE_QP_IPM_ARG_SET_SPLIT_STEP(&split_step, arg);
 	DENSE_QP_IPM_ARG_SET_T_LAM_MIN(&t_lam_min, arg);
 	DENSE_QP_IPM_ARG_SET_T0_INIT(&t0_init, arg);
+	DENSE_QP_IPM_ARG_SET_UPDATE_FACT_EXIT(&update_fact_exit, arg);
 
 	return;
 
@@ -323,6 +338,14 @@ void DENSE_QP_IPM_ARG_SET(char *field, void *value, struct DENSE_QP_IPM_ARG *arg
 		{
 		DENSE_QP_IPM_ARG_SET_TAU_MIN(value, arg);
 		}
+	else if(hpipm_strcmp(field, "lam0_min"))
+		{
+		DENSE_QP_IPM_ARG_SET_LAM0_MIN(value, arg);
+		}
+	else if(hpipm_strcmp(field, "t0_min"))
+		{
+		DENSE_QP_IPM_ARG_SET_T0_MIN(value, arg);
+		}
 	else if(hpipm_strcmp(field, "kkt_fact_alg"))
 		{
 		DENSE_QP_IPM_ARG_SET_KKT_FACT_ALG(value, arg);
@@ -346,6 +369,10 @@ void DENSE_QP_IPM_ARG_SET(char *field, void *value, struct DENSE_QP_IPM_ARG *arg
 	else if(hpipm_strcmp(field, "t0_init"))
 		{
 		DENSE_QP_IPM_ARG_SET_T0_INIT(value, arg);
+		}
+	else if(hpipm_strcmp(field, "update_fact_exit"))
+		{
+		DENSE_QP_IPM_ARG_SET_UPDATE_FACT_EXIT(value, arg);
 		}
 	else
 		{
@@ -503,6 +530,22 @@ void DENSE_QP_IPM_ARG_SET_TAU_MIN(REAL *value, struct DENSE_QP_IPM_ARG *arg)
 
 
 
+void DENSE_QP_IPM_ARG_SET_LAM0_MIN(REAL *value, struct DENSE_QP_IPM_ARG *arg)
+	{
+	arg->lam0_min = *value;
+	return;
+	}
+
+
+
+void DENSE_QP_IPM_ARG_SET_T0_MIN(REAL *value, struct DENSE_QP_IPM_ARG *arg)
+	{
+	arg->t0_min = *value;
+	return;
+	}
+
+
+
 void DENSE_QP_IPM_ARG_SET_KKT_FACT_ALG(int *value, struct DENSE_QP_IPM_ARG *arg)
 	{
 	arg->kkt_fact_alg = *value;
@@ -547,6 +590,52 @@ void DENSE_QP_IPM_ARG_SET_T0_INIT(int *value, struct DENSE_QP_IPM_ARG *arg)
 	arg->t0_init = *value;
 	return;
 	}
+
+
+void DENSE_QP_IPM_ARG_SET_UPDATE_FACT_EXIT(int *value, struct DENSE_QP_IPM_ARG *arg)
+	{
+	arg->update_fact_exit = *value;
+	return;
+	}
+
+
+
+void DENSE_QP_IPM_ARG_GET(char *field, struct DENSE_QP_IPM_ARG *arg, void *value)
+	{
+	if(hpipm_strcmp(field, "lam0_min"))
+		{
+		DENSE_QP_IPM_ARG_GET_LAM0_MIN(arg, value);
+		}
+	else if(hpipm_strcmp(field, "t0_min"))
+		{
+		DENSE_QP_IPM_ARG_GET_T0_MIN(arg, value);
+		}
+	else 
+		{
+#ifdef EXT_DEP
+		printf("error: DENSE_QP_IPM_ARG_GET: wrong field %s\n", field);
+#endif
+		exit(1);
+		}
+	return;
+	}
+
+
+
+void DENSE_QP_IPM_ARG_GET_LAM0_MIN(struct DENSE_QP_IPM_ARG *arg, REAL *value)
+	{
+	*value = arg->lam0_min;
+	return;
+	}
+
+
+
+void DENSE_QP_IPM_ARG_GET_T0_MIN(struct DENSE_QP_IPM_ARG *arg, REAL *value)
+	{
+	*value = arg->t0_min;
+	return;
+	}
+
 
 
 hpipm_size_t DENSE_QP_IPM_WS_STRSIZE()
@@ -1289,13 +1378,26 @@ void DENSE_QP_INIT_VAR(struct DENSE_QP *qp, struct DENSE_QP_SOL *qp_sol, struct 
 	int idxb0;
 	REAL thr0 = 0.5;
 
+	// hot start: keep initial solution as it is
+	if(arg->warm_start>=3)
+		{
+		REAL lam0_min = arg->lam0_min;
+		REAL t0_min = arg->t0_min;
+		for(ii=0; ii<2*nb+2*ng+2*ns; ii++)
+			{
+			if(lam[ii]<lam0_min)
+				lam[ii] = lam0_min;
+			if(t[ii]<t0_min)
+				t[ii] = t0_min;
+			}
+		return;
+		}
 
 	// primal and dual variables
 	if(arg->warm_start==2)
 		{
-
+		// TODO lam and t on relaxed central path instead of clipping
 		thr0 = 1e-1;
-
 		for(ii=0; ii<2*nb+2*ng+2*ns; ii++)
 			{
 			if(lam[ii]<thr0)
@@ -1303,12 +1405,8 @@ void DENSE_QP_INIT_VAR(struct DENSE_QP *qp, struct DENSE_QP_SOL *qp_sol, struct 
 			if(t[ii]<thr0)
 				t[ii] = thr0;
 			}
-
-
 		return;
-
 		}
-
 
 	// primal variables
 	if(arg->warm_start==0)
@@ -1343,7 +1441,7 @@ void DENSE_QP_INIT_VAR(struct DENSE_QP *qp, struct DENSE_QP_SOL *qp_sol, struct 
 			lam[ii] = mu0;
 			}
 		}
-	else // euristic for primal feas
+	else //heuristic for primal feasibility
 		{
 
 		// TODO mask !!!!!!!!!
@@ -1555,6 +1653,7 @@ void DENSE_QP_IPM_ABS_STEP(int kk, struct DENSE_QP *qp, struct DENSE_QP_SOL *qp_
 	if(ws->mask_constr)
 		{
 		// mask out disregarded constraints
+		//VECMUL(cws->nc, qp->d_mask, 0, qp_sol->t, 0, qp_sol->t, 0); // XXX keep for all components t>0
 		VECMUL(cws->nc, qp->d_mask, 0, qp_sol->lam, 0, qp_sol->lam, 0);
 		}
 
@@ -2129,12 +2228,8 @@ exit(1);
 	ws->use_hess_fact = 0;
 	ws->use_A_fact = 0;
 
-//	for(ii=0; ii<cws->nc; ii++)
-//		{
-//		qp->m[0].pa[ii] = 1e-2;
-//		}
-//d_dense_qp_print(qp->dim, qp);
-//exit(1);
+	// set local flags
+	int updated_fact = 0; // flag whether the factorization is updated with the current solution iterate
 
 	// detect constr mask
 	int mask_unconstr;
@@ -2169,6 +2264,7 @@ exit(1);
 	if(cws->nc==0 | mask_unconstr==1)
 		{
 		FACT_SOLVE_KKT_UNCONSTR_DENSE_QP(qp, qp_sol, arg, ws);
+		updated_fact = 1;
 		if(arg->comp_res_exit)
 			{
 			// compute residuals
@@ -2216,6 +2312,7 @@ exit(1);
 	if(ws->mask_constr)
 		{
 		// mask out disregarded constraints
+		//VECMUL(cws->nc, qp->d_mask, 0, qp_sol->t, 0, qp_sol->t, 0); // XXX keep for all components t>0
 		VECMUL(cws->nc, qp->d_mask, 0, qp_sol->lam, 0, qp_sol->lam, 0);
 		}
 
@@ -2237,15 +2334,16 @@ exit(1);
 		ws->qp_step->gz = qp->gz;
 		ws->qp_step->b = qp->b;
 		ws->qp_step->d = qp->d;
+		ws->qp_step->d_mask = qp->d_mask;
 		ws->qp_step->m = ws->tmp_m;
-		ws->qp_step->d_mask = qp->d_mask; // XXX
 
 		// alias core workspace
 		cws->res_m = ws->qp_step->m->pa;
 //		cws->res_m_bkp = ws->qp_step->m->pa;
 
 		mu = VECMULDOT(cws->nc, qp_sol->lam, 0, qp_sol->t, 0, ws->tmp_m, 0);
-		mu /= cws->nc;
+		//mu /= cws->nc;
+		mu *= cws->nc_mask_inv;
 		cws->mu = mu;
 
 		// IPM loop (absolute formulation)
@@ -2258,6 +2356,7 @@ exit(1);
 
 			// compute delta step
 			DENSE_QP_IPM_ABS_STEP(kk, qp, qp_sol, arg, ws);
+			updated_fact = 1;
 
 			// compute mu
 			mu = VECMULDOT(cws->nc, qp_sol->lam, 0, qp_sol->t, 0, ws->tmp_m, 0);
@@ -2326,6 +2425,10 @@ exit(1);
 
 	// relative (delta) IPM formulation
 
+	REAL res_m_tau = 0.0;
+	AXPY(cws->nc, -tau_min, qp->d_mask, 0, ws->res->res_m, 0, ws->tmp_m, 0);
+	VECNRM_INF(cws->nc, ws->tmp_m, 0, &res_m_tau);
+
 	// IPM loop
 	for(kk=0; \
 			kk < arg->iter_max & \
@@ -2333,7 +2436,8 @@ exit(1);
 			(qp_res_max[0] > arg->res_g_max | \
 			qp_res_max[1] > arg->res_b_max | \
 			qp_res_max[2] > arg->res_d_max | \
-			fabs(qp_res_max[3]-tau_min) > arg->res_m_max | \
+			/*fabs(qp_res_max[3]-tau_min) > arg->res_m_max | \ */
+			res_m_tau > arg->res_m_max | \
 			ws->res->dual_gap > arg->dual_gap_max) \
 			; kk++)
 		{
@@ -2341,6 +2445,7 @@ exit(1);
 
 		// compute delta step
 		DENSE_QP_IPM_DELTA_STEP(kk, qp, qp_sol, arg, ws);
+		updated_fact = 1;
 
 		// compute residuals
 		DENSE_QP_RES_COMPUTE(qp, qp_sol, ws->res, ws->res_ws);
@@ -2366,9 +2471,20 @@ exit(1);
 			stat[stat_m*(kk+1)+11] = ws->res->obj;
 			}
 
+		AXPY(cws->nc, -tau_min, qp->d_mask, 0, ws->res->res_m, 0, ws->tmp_m, 0);
+		VECNRM_INF(cws->nc, ws->tmp_m, 0, &res_m_tau);
+
 		}
 
 set_status:
+
+	if(arg->update_fact_exit==1 & updated_fact==0)
+		{
+		// compute fresh factorization at current solution iterate
+		DENSE_QP_FACT_KKT_STEP(qp, arg, ws);
+		// backup initial guess in core, for use in case it is already optimal
+		BACKUP_VAR_QP(cws);
+		}
 
 	// save info before return
 	ws->iter = kk;
@@ -2578,26 +2694,71 @@ void DENSE_QP_IPM_SENS(struct DENSE_QP *qp, struct DENSE_QP_SOL *qp_sol, struct 
 	// solve kkt
 	SOLVE_KKT_STEP_DENSE_QP(qp, qp_sol, arg, ws);
 
+	return;
+
+	}
+
+
+
+void DENSE_QP_IPM_SENS_ADJ(struct DENSE_QP *qp, struct DENSE_QP_SOL *qp_sol, struct DENSE_QP_IPM_ARG *arg, struct DENSE_QP_IPM_WS *ws)
+	{
+
 #if 0
-	// alpha TODO fix alpha=1 !!!!!
-//	COMPUTE_ALPHA_QP(cws->dlam, cws->dt, cws);
-	cws->alpha = 1.0;
-
-	//
-	UPDATE_VAR_QP(cws);
-
-	if(arg->comp_res_pred)
-		{
-		// compute residuals in exit
-		DENSE_QP_RES_COMPUTE(qp, qp_sol, ws->res, ws->res_ws);
-		}
+	DENSE_QP_DIM_PRINT(qp->dim);
+	DENSE_QP_PRINT(qp->dim, qp);
 #endif
 
-//printf("\npredict\t%e\t%e\t%e\t%e\n", qp_res[0], qp_res[1], qp_res[2], qp_res[3]);
+	int ii;
 
-	// TODO
+	struct CORE_QP_IPM_WORKSPACE *cws = ws->core_workspace;
 
-	// do not change status
+	// arg to core workspace
+	cws->lam_min = arg->lam_min;
+	cws->t_min = arg->t_min;
+	cws->t_min_inv = arg->t_min>0.0 ? 1.0/arg->t_min : 1e30;
+	cws->tau_min = arg->tau_min;
+	cws->t_lam_min = arg->t_lam_min;
+
+	// alias qp vectors into qp_sol
+	cws->v = qp_sol->v->pa;
+	cws->pi = qp_sol->pi->pa;
+	cws->lam = qp_sol->lam->pa;
+	cws->t = qp_sol->t->pa;
+
+	// load sol from bkp
+	for(ii=0; ii<cws->nv; ii++)
+		cws->v[ii] = cws->v_bkp[ii];
+	for(ii=0; ii<cws->ne; ii++)
+		cws->pi[ii] = cws->pi_bkp[ii];
+	for(ii=0; ii<cws->nc; ii++)
+		cws->lam[ii] = cws->lam_bkp[ii];
+	for(ii=0; ii<cws->nc; ii++)
+		cws->t[ii] = cws->t_bkp[ii];
+
+	// backup and scale m
+	REAL *m = qp->m->pa;
+	REAL *tmp_m = ws->tmp_m->pa;
+	for(ii=0; ii<cws->nc; ii++)
+		{
+		tmp_m[ii] = m[ii];
+		m[ii] *= cws->t[ii];
+		}
+
+	// solve kkt
+	SOLVE_KKT_STEP_DENSE_QP(qp, qp_sol, arg, ws);
+
+	// scale t
+	REAL *t = qp_sol->t->pa;
+	for(ii=0; ii<cws->nc; ii++)
+		{
+		t[ii] *= cws->t_inv[ii];
+		}
+
+	// restore m
+	for(ii=0; ii<cws->nc; ii++)
+		{
+		m[ii] = tmp_m[ii];
+		}
 
 	return;
 

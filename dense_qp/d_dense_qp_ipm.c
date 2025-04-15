@@ -67,6 +67,7 @@
 
 #define AXPY blasfeo_daxpy
 #define BACKUP_RES_M d_backup_res_m
+#define BACKUP_VAR_QP d_backup_var_qp
 #define COMPUTE_ALPHA_QP d_compute_alpha_qp
 #define COMPUTE_CENTERING_CORRECTION_QP d_compute_centering_correction_qp
 #define COMPUTE_CENTERING_QP d_compute_centering_qp
@@ -80,6 +81,7 @@
 #define DENSE_QP_COMPUTE_OBJ d_dense_qp_compute_obj
 #define DENSE_QP_DIM d_dense_qp_dim
 #define DENSE_QP_DIM_PRINT d_dense_qp_dim_print
+#define DENSE_QP_FACT_KKT_STEP d_dense_qp_fact_kkt_step
 #define DENSE_QP_IPM_ARG d_dense_qp_ipm_arg
 #define DENSE_QP_IPM_ARG_PRINT d_dense_qp_ipm_arg_print
 #define DENSE_QP_IPM_WS d_dense_qp_ipm_ws
@@ -98,10 +100,10 @@
 #define DENSE_QP_SOL_MEMSIZE d_dense_qp_sol_memsize
 #define DENSE_QP_SOL_PRINT d_dense_qp_sol_print
 #define DOT blasfeo_ddot
-#define FACT_LQ_SOLVE_KKT_STEP_DENSE_QP d_fact_lq_solve_kkt_step_dense_qp
-#define FACT_SOLVE_LU_KKT_STEP_DENSE_QP d_fact_solve_lu_kkt_step_dense_qp
-#define FACT_SOLVE_KKT_STEP_DENSE_QP d_fact_solve_kkt_step_dense_qp
-#define FACT_SOLVE_KKT_UNCONSTR_DENSE_QP d_fact_solve_kkt_unconstr_dense_qp
+#define FACT_LQ_SOLVE_KKT_STEP_DENSE_QP d_dense_qp_fact_lq_solve_kkt_step
+#define FACT_SOLVE_LU_KKT_STEP_DENSE_QP d_dense_qp_fact_solve_lu_kkt_step
+#define FACT_SOLVE_KKT_STEP_DENSE_QP d_dense_qp_fact_solve_kkt_step
+#define FACT_SOLVE_KKT_UNCONSTR_DENSE_QP d_dense_qp_fact_solve_kkt_unconstr
 #define GELQF_WORKSIZE blasfeo_dgelqf_worksize
 #define GEMV_DIAG blasfeo_dgemv_d
 #define GEMV_NT blasfeo_dgemv_nt
@@ -113,7 +115,7 @@
 #define REAL double
 #define SIZE_STRMAT blasfeo_memsize_dmat
 #define SIZE_STRVEC blasfeo_memsize_dvec
-#define SOLVE_KKT_STEP_DENSE_QP d_solve_kkt_step_dense_qp
+#define SOLVE_KKT_STEP_DENSE_QP d_dense_qp_solve_kkt_step
 #define STRMAT blasfeo_dmat
 #define STRVEC blasfeo_dvec
 #define SYMV_L blasfeo_dsymv_l
@@ -155,12 +157,18 @@
 #define DENSE_QP_IPM_ARG_SET_LAM_MIN d_dense_qp_ipm_arg_set_lam_min
 #define DENSE_QP_IPM_ARG_SET_T_MIN d_dense_qp_ipm_arg_set_t_min
 #define DENSE_QP_IPM_ARG_SET_TAU_MIN d_dense_qp_ipm_arg_set_tau_min
+#define DENSE_QP_IPM_ARG_SET_LAM0_MIN d_dense_qp_ipm_arg_set_lam0_min
+#define DENSE_QP_IPM_ARG_SET_T0_MIN d_dense_qp_ipm_arg_set_t0_min
 #define DENSE_QP_IPM_ARG_SET_KKT_FACT_ALG d_dense_qp_ipm_arg_set_kkt_fact_alg
 #define DENSE_QP_IPM_ARG_SET_REMOVE_LIN_DEP_EQ d_dense_qp_ipm_arg_set_remove_lin_dep_eq
 #define DENSE_QP_IPM_ARG_SET_COMPUTE_OBJ d_dense_qp_ipm_arg_set_compute_obj
 #define DENSE_QP_IPM_ARG_SET_SPLIT_STEP d_dense_qp_ipm_arg_set_split_step
 #define DENSE_QP_IPM_ARG_SET_T_LAM_MIN d_dense_qp_ipm_arg_set_t_lam_min
 #define DENSE_QP_IPM_ARG_SET_T0_INIT d_dense_qp_ipm_arg_set_t0_init
+#define DENSE_QP_IPM_ARG_SET_UPDATE_FACT_EXIT d_dense_qp_ipm_arg_set_update_fact_exit
+#define DENSE_QP_IPM_ARG_GET d_dense_qp_ipm_arg_get
+#define DENSE_QP_IPM_ARG_GET_LAM0_MIN d_dense_qp_ipm_arg_get_lam0_min
+#define DENSE_QP_IPM_ARG_GET_T0_MIN d_dense_qp_ipm_arg_get_t0_min
 // ipm
 #define DENSE_QP_IPM_WS_STRSIZE d_dense_qp_ipm_ws_strsize
 #define DENSE_QP_IPM_WS_MEMSIZE d_dense_qp_ipm_ws_memsize
@@ -183,6 +191,7 @@
 #define DENSE_QP_IPM_SOLVE d_dense_qp_ipm_solve
 #define DENSE_QP_IPM_PREDICT d_dense_qp_ipm_predict
 #define DENSE_QP_IPM_SENS d_dense_qp_ipm_sens
+#define DENSE_QP_IPM_SENS_ADJ d_dense_qp_ipm_sens_adj
 #define DENSE_QP_COMPUTE_STEP_LENGTH d_dense_qp_compute_step_length
 
 #include "x_dense_qp_ipm.c"

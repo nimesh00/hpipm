@@ -98,8 +98,8 @@
 #define COND_DCTD s_cond_DCtd
 #define COND_DCT s_cond_DCt
 #define COND_D s_cond_d
+#define COND_SOL s_cond_sol
 #define EXPAND_SOL s_expand_sol
-#define EXPAND_PRIMAL_SOL s_expand_primal_sol
 #define UPDATE_COND_BABT s_update_cond_BAbt
 #define UPDATE_COND_RSQRQ_N2NX3 s_update_cond_RSQrq_N2nx3
 #define UPDATE_COND_DCTD s_update_cond_DCtd

@@ -62,6 +62,7 @@
 #define COLSC blasfeo_scolsc
 #define COMPUTE_LAM_T_QP s_compute_lam_t_qp
 #define COMPUTE_GAMMA_GAMMA_QP s_compute_Gamma_gamma_qp
+#define COMPUTE_GGAMMA_QP s_compute_Gamma_qp
 #define COMPUTE_GAMMA_QP s_compute_gamma_qp
 #define CORE_QP_IPM_WORKSPACE s_core_qp_ipm_workspace
 #define DIAAD_SP blasfeo_sdiaad_sp
@@ -98,6 +99,7 @@
 #define STRVEC blasfeo_svec
 #define SYRK_LN blasfeo_ssyrk_ln
 #define SYRK_LN_MN blasfeo_ssyrk_ln_mn
+#define SYRK_POTRF_LN blasfeo_ssyrk_spotrf_ln
 #define SYRK_POTRF_LN_MN blasfeo_ssyrk_spotrf_ln_mn
 #define TRCP_L blasfeo_strcp_l
 #define TRMM_RLNN blasfeo_strmm_rlnn
@@ -117,6 +119,7 @@
 
 
 #define OCP_QP_FACT_SOLVE_KKT_UNCONSTR s_ocp_qp_fact_solve_kkt_unconstr
+#define OCP_QP_FACT_KKT_STEP s_ocp_qp_fact_kkt_step
 #define OCP_QP_FACT_SOLVE_KKT_STEP s_ocp_qp_fact_solve_kkt_step
 #define OCP_QP_FACT_LQ_SOLVE_KKT_STEP s_ocp_qp_fact_lq_solve_kkt_step
 #define OCP_QP_SOLVE_KKT_STEP s_ocp_qp_solve_kkt_step

@@ -179,6 +179,124 @@ void d_compute_Gamma_gamma_qp(double *res_d, double *res_m, struct d_core_qp_ipm
 
 
 
+void d_compute_Gamma_qp(struct d_core_qp_ipm_workspace *cws)
+	{
+
+	int nc = cws->nc;
+
+	double *lam = cws->lam;
+	double *t = cws->t;
+	double *t_inv = cws->t_inv;
+	double *Gamma = cws->Gamma;
+	double lam_min = cws->lam_min;
+	double t_min = cws->t_min;
+	double t_min_inv = cws->t_min_inv;
+
+	double t_inv_tmp, lam_tmp;
+
+	__m512d
+		z_ones, z_lam_min, z_t_min, z_t_min_inv,
+		z_tmp0, z_t0, z_t_inv0, z_lam0,
+		z_tmp1, z_t1, z_t_inv1, z_lam1;
+	
+	__mmask8
+		m_mask0, m_mask1;
+
+	__m256d
+		y_ones, y_lam_min, y_t_min, y_t_min_inv,
+		y_tmp0, y_t0, y_t_inv0, y_lam0, y_mask0,
+		y_tmp1, y_t1, y_t_inv1, y_lam1, y_mask1;
+
+	z_ones = _mm512_set1_pd( 1.0 );
+	y_ones = _mm256_set_pd( 1.0, 1.0, 1.0, 1.0 );
+
+	// local variables
+	int ii;
+
+	z_lam_min = _mm512_set1_pd( lam_min );
+	z_t_min = _mm512_set1_pd( t_min );
+	z_t_min_inv = _mm512_set1_pd( t_min_inv );
+	y_lam_min = _mm256_broadcast_sd( &lam_min );
+	y_t_min = _mm256_broadcast_sd( &t_min );
+	y_t_min_inv = _mm256_broadcast_sd( &t_min_inv );
+
+	if(cws->t_lam_min==1)
+		{
+		ii = 0;
+		for(; ii<nc-7; ii+=8)
+			{
+			z_t0 = _mm512_loadu_pd( &t[ii] );
+			z_t_inv0 = _mm512_div_pd( z_ones, z_t0 );
+			_mm512_storeu_pd( &t_inv[ii], z_t_inv0 );
+			z_lam0 = _mm512_loadu_pd( &lam[ii] );
+
+			m_mask0 = _mm512_cmp_pd_mask( z_lam0, z_lam_min, 2 );
+			m_mask1 = _mm512_cmp_pd_mask( z_t0, z_t_min, 2 );
+			z_lam0 = _mm512_mask_blend_pd( m_mask0, z_lam0, z_lam_min );
+			z_t_inv0 = _mm512_mask_blend_pd( m_mask1, z_t_inv0, z_t_min_inv );
+
+			z_tmp0 = _mm512_mul_pd( z_t_inv0, z_lam0 );
+			_mm512_storeu_pd( &Gamma[ii], z_tmp0 );
+			}
+		for(; ii<nc-3; ii+=4)
+			{
+			y_t0 = _mm256_loadu_pd( &t[ii] );
+			y_t_inv0 = _mm256_div_pd( y_ones, y_t0 );
+			_mm256_storeu_pd( &t_inv[ii], y_t_inv0 );
+			y_lam0 = _mm256_loadu_pd( &lam[ii] );
+
+			y_mask0 = _mm256_cmp_pd( y_lam0, y_lam_min, 2 );
+			y_mask1 = _mm256_cmp_pd( y_t0, y_t_min, 2 );
+			y_lam0 = _mm256_blendv_pd( y_lam0, y_lam_min, y_mask0 );
+			y_t_inv0 = _mm256_blendv_pd( y_t_inv0, y_t_min_inv, y_mask1 );
+
+			y_tmp0 = _mm256_mul_pd( y_t_inv0, y_lam0 );
+			_mm256_storeu_pd( &Gamma[ii], y_tmp0 );
+			}
+		for(; ii<nc; ii++)
+			{
+			t_inv[ii] = 1.0/t[ii];
+			t_inv_tmp = t[ii]<t_min ? t_min_inv : t_inv[ii];
+			lam_tmp = lam[ii]<lam_min ? lam_min : lam[ii];
+			Gamma[ii] = t_inv_tmp*lam_tmp;
+			}
+		}
+	else
+		{
+		ii = 0;
+		for(; ii<nc-7; ii+=8)
+			{
+			z_t0 = _mm512_loadu_pd( &t[ii] );
+			z_t_inv0 = _mm512_div_pd( z_ones, z_t0 );
+			_mm512_storeu_pd( &t_inv[ii], z_t_inv0 );
+			z_lam0 = _mm512_loadu_pd( &lam[ii] );
+
+			z_tmp0 = _mm512_mul_pd( z_t_inv0, z_lam0 );
+			_mm512_storeu_pd( &Gamma[ii], z_tmp0 );
+			}
+		for(; ii<nc-3; ii+=4)
+			{
+			y_t0 = _mm256_loadu_pd( &t[ii] );
+			y_t_inv0 = _mm256_div_pd( y_ones, y_t0 );
+			_mm256_storeu_pd( &t_inv[ii], y_t_inv0 );
+			y_lam0 = _mm256_loadu_pd( &lam[ii] );
+
+			y_tmp0 = _mm256_mul_pd( y_t_inv0, y_lam0 );
+			_mm256_storeu_pd( &Gamma[ii], y_tmp0 );
+			}
+		for(; ii<nc; ii++)
+			{
+			t_inv[ii] = 1.0/t[ii];
+			Gamma[ii] = t_inv[ii]*lam[ii];
+			}
+		}
+
+	return;
+
+	}
+
+
+
 void d_compute_gamma_qp(double *res_d, double *res_m, struct d_core_qp_ipm_workspace *cws)
 	{
 
@@ -608,6 +726,94 @@ void d_update_var_qp(struct d_core_qp_ipm_workspace *cws)
 			t[ii] += tmp_alpha_prim * dt[ii];
 			}
 
+		}
+
+	return;
+
+	}
+
+
+
+void d_backup_var_qp(struct d_core_qp_ipm_workspace *cws)
+	{
+	
+	// extract workspace members
+	int nv = cws->nv;
+	int ne = cws->ne;
+	int nc = cws->nc;
+
+	double *v = cws->v;
+	double *pi = cws->pi;
+	double *lam = cws->lam;
+	double *t = cws->t;
+	double *v_bkp = cws->v_bkp;
+	double *pi_bkp = cws->pi_bkp;
+	double *lam_bkp = cws->lam_bkp;
+	double *t_bkp = cws->t_bkp;
+
+	__m512d
+		z_tmp2, z_tmp3;
+	
+	__m256d
+		y_tmp2, y_tmp3;
+
+	// local variables
+	int ii;
+
+	// backup v
+	ii = 0;
+	for(; ii<nv-7; ii+=8)
+		{
+		z_tmp2 = _mm512_loadu_pd( &v[ii] );
+		_mm512_storeu_pd( &v_bkp[ii], z_tmp2 );
+		}
+	for(; ii<nv-3; ii+=4)
+		{
+		y_tmp2 = _mm256_loadu_pd( &v[ii] );
+		_mm256_storeu_pd( &v_bkp[ii], y_tmp2 );
+		}
+	for(; ii<nv; ii++)
+		{
+		v_bkp[ii] = v[ii];
+		}
+
+	// backup pi
+	ii = 0;
+	for(; ii<ne-7; ii+=8)
+		{
+		z_tmp2 = _mm512_loadu_pd( &pi[ii] );
+		_mm512_storeu_pd( &pi_bkp[ii], z_tmp2 );
+		}
+	for(; ii<ne-3; ii+=4)
+		{
+		y_tmp2 = _mm256_loadu_pd( &pi[ii] );
+		_mm256_storeu_pd( &pi_bkp[ii], y_tmp2 );
+		}
+	for(; ii<ne; ii++)
+		{
+		pi_bkp[ii] = pi[ii];
+		}
+
+	// backup lam and t
+	ii = 0;
+	for(; ii<nc-7; ii+=8)
+		{
+		z_tmp2 = _mm512_loadu_pd( &lam[ii] );
+		z_tmp3 = _mm512_loadu_pd( &t[ii] );
+		_mm512_storeu_pd( &lam_bkp[ii], z_tmp2 );
+		_mm512_storeu_pd( &t_bkp[ii], z_tmp3 );
+		}
+	for(; ii<nc-3; ii+=4)
+		{
+		y_tmp2 = _mm256_loadu_pd( &lam[ii] );
+		y_tmp3 = _mm256_loadu_pd( &t[ii] );
+		_mm256_storeu_pd( &lam_bkp[ii], y_tmp2 );
+		_mm256_storeu_pd( &t_bkp[ii], y_tmp3 );
+		}
+	for(; ii<nc; ii++)
+		{
+		lam_bkp[ii] = lam[ii];
+		t_bkp[ii] = t[ii];
 		}
 
 	return;

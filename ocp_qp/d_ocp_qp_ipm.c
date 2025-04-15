@@ -67,6 +67,7 @@
 
 #define AXPY blasfeo_daxpy
 #define BACKUP_RES_M d_backup_res_m
+#define BACKUP_VAR_QP d_backup_var_qp
 #define BLAS_TRSM blasfeo_dtrsm
 #define COMPUTE_ALPHA_QP d_compute_alpha_qp
 #define COMPUTE_CENTERING_CORRECTION_QP d_compute_centering_correction_qp
@@ -85,6 +86,7 @@
 #define OCP_QP d_ocp_qp
 #define OCP_QP_DIM d_ocp_qp_dim
 #define OCP_QP_DIM_PRINT d_ocp_qp_dim_print
+#define OCP_QP_FACT_KKT_STEP d_ocp_qp_fact_kkt_step
 #define OCP_QP_FACT_SOLVE_KKT_STEP d_ocp_qp_fact_solve_kkt_step
 #define OCP_QP_FACT_LQ_SOLVE_KKT_STEP d_ocp_qp_fact_lq_solve_kkt_step
 #define OCP_QP_FACT_SOLVE_KKT_UNCONSTR d_ocp_qp_fact_solve_kkt_unconstr
@@ -160,9 +162,16 @@
 #define OCP_QP_IPM_ARG_SET_LAM_MIN d_ocp_qp_ipm_arg_set_lam_min
 #define OCP_QP_IPM_ARG_SET_T_MIN d_ocp_qp_ipm_arg_set_t_min
 #define OCP_QP_IPM_ARG_SET_TAU_MIN d_ocp_qp_ipm_arg_set_tau_min
+#define OCP_QP_IPM_ARG_SET_LAM0_MIN d_ocp_qp_ipm_arg_set_lam0_min
+#define OCP_QP_IPM_ARG_SET_T0_MIN d_ocp_qp_ipm_arg_set_t0_min
 #define OCP_QP_IPM_ARG_SET_SPLIT_STEP d_ocp_qp_ipm_arg_set_split_step
 #define OCP_QP_IPM_ARG_SET_VAR_INIT_SCHEME d_ocp_qp_ipm_arg_set_var_init_scheme
 #define OCP_QP_IPM_ARG_SET_T_LAM_MIN d_ocp_qp_ipm_arg_set_t_lam_min
+#define OCP_QP_IPM_ARG_SET_T0_INIT d_ocp_qp_ipm_arg_set_t0_init
+#define OCP_QP_IPM_ARG_SET_UPDATE_FACT_EXIT d_ocp_qp_ipm_arg_set_update_fact_exit
+#define OCP_QP_IPM_ARG_GET d_ocp_qp_ipm_arg_get
+#define OCP_QP_IPM_ARG_GET_LAM0_MIN d_ocp_qp_ipm_arg_get_lam0_min
+#define OCP_QP_IPM_ARG_GET_T0_MIN d_ocp_qp_ipm_arg_get_t0_min
 #define OCP_QP_IPM_ARG_DEEPCOPY d_ocp_qp_ipm_arg_deepcopy
 // ipm
 #define OCP_QP_IPM_WS_STRSIZE d_ocp_qp_ipm_ws_strsize
@@ -193,6 +202,7 @@
 #define OCP_QP_IPM_SOLVE d_ocp_qp_ipm_solve
 #define OCP_QP_IPM_PREDICT d_ocp_qp_ipm_predict
 #define OCP_QP_IPM_SENS d_ocp_qp_ipm_sens
+#define OCP_QP_IPM_SENS_ADJ d_ocp_qp_ipm_sens_adj
 
 
 
