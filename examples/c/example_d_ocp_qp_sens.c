@@ -43,6 +43,7 @@
 #include <hpipm_d_ocp_qp_dim.h>
 #include <hpipm_d_ocp_qp.h>
 #include <hpipm_d_ocp_qp_sol.h>
+#include <hpipm_d_ocp_qp_seed.h>
 #include <hpipm_d_ocp_qp_utils.h>
 #include <hpipm_timing.h>
 
@@ -259,28 +260,28 @@ int main()
 * print solution info
 ************************************************/
 
-    printf("\nHPIPM returned with flag %i.\n", hpipm_status);
-    if(hpipm_status == 0)
+	printf("\nHPIPM returned with flag %i.\n", hpipm_status);
+	if(hpipm_status == 0)
 		{
-        printf("\n -> QP solved!\n");
+		printf("\n -> QP solved!\n");
 		}
 	else if(hpipm_status==1)
 		{
-        printf("\n -> Solver failed! Maximum number of iterations reached\n");
+		printf("\n -> Solver failed! Maximum number of iterations reached\n");
 		}
 	else if(hpipm_status==2)
 		{
-        printf("\n -> Solver failed! Minimum step lenght reached\n");
+		printf("\n -> Solver failed! Minimum step lenght reached\n");
 		}
 	else if(hpipm_status==2)
 		{
-        printf("\n -> Solver failed! NaN in computations\n");
+		printf("\n -> Solver failed! NaN in computations\n");
 		}
 	else
 		{
-        printf("\n -> Solver failed! Unknown return flag\n");
+		printf("\n -> Solver failed! Unknown return flag\n");
 		}
-    printf("\nAverage solution time over %i runs: %e [s]\n", nrep, time_ipm);
+	printf("\nAverage solution time over %i runs: %e [s]\n", nrep, time_ipm);
 	printf("\n\n");
 
 /************************************************
@@ -390,7 +391,7 @@ int main()
 
 	double time_pred = hpipm_toc(&timer) / nrep;
 
-    printf("\nAverage prediction time over %i runs: %e [s]\n", nrep, time_pred);
+	printf("\nAverage prediction time over %i runs: %e [s]\n", nrep, time_pred);
 	printf("\n\n");
 
 	// predicted solution
@@ -429,41 +430,43 @@ int main()
 * sensitivity of solution of QP
 ************************************************/
 
-	void *qp2_mem = malloc(qp_size);
-	struct d_ocp_qp qp2;
-	d_ocp_qp_create(&dim, &qp2, qp1_mem);
+	// res struct
+	hpipm_size_t seed_size = d_ocp_qp_seed_memsize(&dim);
+	void *seed_mem = malloc(seed_size);
+	struct d_ocp_qp_seed seed;
+	d_ocp_qp_seed_create(&dim, &seed, seed_mem);
 
 	// new sol struct
-	void *qp_sol2_mem = malloc(qp_sol_size);
-	struct d_ocp_qp_sol qp_sol2;
-	d_ocp_qp_sol_create(&dim, &qp_sol2, qp_sol2_mem);
+	void *sens_mem = malloc(qp_sol_size);
+	struct d_ocp_qp_sol sens;
+	d_ocp_qp_sol_create(&dim, &sens, sens_mem);
 
-	// set I to param at RHS
-	d_ocp_qp_copy_all(&qp, &qp2);
+	// set seeds to zero
+	d_ocp_qp_seed_set_zero(&seed);
 
-	d_ocp_qp_set_rhs_zero(&qp2);
-
-	double one = 1.0;
+	// set I to param
+	double *seed_x0 = malloc(nx[0]*sizeof(double));
+	for(ii=0; ii<nx[0]; ii++)
+		seed_x0[ii] = 0.0;
 	int index = 0;
-//	d_ocp_qp_set_el_lbx(0, index, &one, &qp2);
-//	d_ocp_qp_set_el_ubx(0, index, &one, &qp2);
-	d_ocp_qp_set_el("lbx", 0, index, &one, &qp2);
-	d_ocp_qp_set_el("ubx", 0, index, &one, &qp2);
+	seed_x0[index] = 1.0;
+	int stage = 0;
+	d_ocp_qp_seed_set_seed_lbx(stage, seed_x0, &seed);
+	d_ocp_qp_seed_set_seed_ubx(stage, seed_x0, &seed);
 
-//	d_ocp_qp_print(&dim, &qp2);
-//	exit(1);
+	// print seeds
+	//d_ocp_qp_seed_print(seed.dim, &seed);
 
-	// sensitivity solution
-//	int comp_res_pred = 0;
-//	d_ocp_qp_ipm_arg_set_comp_res_pred(&comp_res_pred, &arg);
-
-	d_ocp_qp_ipm_sens(&qp2, &qp_sol2, &arg, &workspace);
+	// forward sensitivity of solution
+	d_ocp_qp_ipm_sens_frw(&qp, &seed, &sens, &arg, &workspace);
+	// adjoint sensitivity of solution
+	//d_ocp_qp_ipm_sens_adj(&qp, &seed, &sens, &arg, &workspace);
 
 	// u
 	printf("\nu_sens = \n");
 	for(ii=0; ii<=N; ii++)
 		{
-		d_ocp_qp_sol_get_u(ii, &qp_sol2, u);
+		d_ocp_qp_sol_get_u(ii, &sens, u);
 		d_print_mat(1, nu[ii], u, 1);
 		}
 
@@ -471,7 +474,7 @@ int main()
 	printf("\nx_sens = \n");
 	for(ii=0; ii<=N; ii++)
 		{
-		d_ocp_qp_sol_get_x(ii, &qp_sol2, x);
+		d_ocp_qp_sol_get_x(ii, &sens, x);
 		d_print_mat(1, nx[ii], x, 1);
 		}
 
@@ -479,21 +482,25 @@ int main()
 	printf("\npi_sens = \n");
 	for(ii=0; ii<N; ii++)
 		{
-		d_ocp_qp_sol_get_pi(ii, &qp_sol2, pi);
+		d_ocp_qp_sol_get_pi(ii, &sens, pi);
 		d_print_mat(1, nx[ii+1], pi, 1);
 		}
+
+	// print solution sensitivities
+	//d_ocp_qp_sol_print(sens.dim, &sens);
 
 /************************************************
 * free memory and return
 ************************************************/
 
-    free(dim_mem);
-    free(qp_mem);
-    free(qp1_mem);
-    free(qp2_mem);
+	free(dim_mem);
+	free(qp_mem);
+	free(qp1_mem);
 	free(qp_sol_mem);
 	free(qp_sol1_mem);
-	free(qp_sol2_mem);
+	free(seed_mem);
+	free(sens_mem);
+	free(seed_x0);
 	free(ipm_arg_mem);
 	free(ipm_mem);
 

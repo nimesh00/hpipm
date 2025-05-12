@@ -63,6 +63,7 @@ set(ALLOWED_TARGETS
 		GENERIC
 		)
 set_property(CACHE TARGET PROPERTY STRINGS ${ALLOWED_TARGETS})
+message(STATUS "HPIPM Target is ${TARGET}")
 
 # Use C99 extension to math library
 set(USE_C99_MATH ON CACHE STRING "Use C99 extension to math library")
@@ -178,6 +179,8 @@ if(${TARGET} MATCHES AVX)
 	endif()
 elseif(${TARGET} MATCHES GENERIC)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DTARGET_GENERIC")
+else()
+	message(WARNING "Unknown target ${TARGET}. GENERIC code will be used instead.")
 endif()
 
 #
@@ -238,6 +241,7 @@ file(GLOB DENSE_QP_SRC
 	${PROJECT_SOURCE_DIR}/dense_qp/d_dense_qp_ipm.c
 	${PROJECT_SOURCE_DIR}/dense_qp/d_dense_qp_res.c
 	${PROJECT_SOURCE_DIR}/dense_qp/d_dense_qp_utils.c
+	${PROJECT_SOURCE_DIR}/dense_qp/d_dense_qp_seed.c
 	${PROJECT_SOURCE_DIR}/dense_qp/d_dense_qcqp_dim.c
 	${PROJECT_SOURCE_DIR}/dense_qp/d_dense_qcqp.c
 	${PROJECT_SOURCE_DIR}/dense_qp/d_dense_qcqp_sol.c
@@ -252,6 +256,7 @@ file(GLOB DENSE_QP_SRC
 	${PROJECT_SOURCE_DIR}/dense_qp/s_dense_qp_ipm.c
 	${PROJECT_SOURCE_DIR}/dense_qp/s_dense_qp_res.c
 	${PROJECT_SOURCE_DIR}/dense_qp/s_dense_qp_utils.c
+	${PROJECT_SOURCE_DIR}/dense_qp/s_dense_qp_seed.c
 	${PROJECT_SOURCE_DIR}/dense_qp/s_dense_qcqp_dim.c
 	${PROJECT_SOURCE_DIR}/dense_qp/s_dense_qcqp.c
 	${PROJECT_SOURCE_DIR}/dense_qp/s_dense_qcqp_sol.c
@@ -286,6 +291,7 @@ file(GLOB OCP_QP_SRC
 	${PROJECT_SOURCE_DIR}/ocp_qp/d_ocp_qp_res.c
 	${PROJECT_SOURCE_DIR}/ocp_qp/d_ocp_qp_utils.c
 	${PROJECT_SOURCE_DIR}/ocp_qp/d_ocp_qp_red.c
+	${PROJECT_SOURCE_DIR}/ocp_qp/d_ocp_qp_seed.c
 	${PROJECT_SOURCE_DIR}/ocp_qp/d_ocp_qcqp.c
 	${PROJECT_SOURCE_DIR}/ocp_qp/d_ocp_qcqp_dim.c
 	${PROJECT_SOURCE_DIR}/ocp_qp/d_ocp_qcqp_sol.c
@@ -301,6 +307,7 @@ file(GLOB OCP_QP_SRC
 	${PROJECT_SOURCE_DIR}/ocp_qp/s_ocp_qp_res.c
 	${PROJECT_SOURCE_DIR}/ocp_qp/s_ocp_qp_utils.c
 	${PROJECT_SOURCE_DIR}/ocp_qp/s_ocp_qp_red.c
+	${PROJECT_SOURCE_DIR}/ocp_qp/s_ocp_qp_seed.c
 	${PROJECT_SOURCE_DIR}/ocp_qp/s_ocp_qcqp.c
 	${PROJECT_SOURCE_DIR}/ocp_qp/s_ocp_qcqp_dim.c
 	${PROJECT_SOURCE_DIR}/ocp_qp/s_ocp_qcqp_sol.c

@@ -490,7 +490,40 @@ void COND_QP_COND_RHS(struct OCP_QP *ocp_qp, struct DENSE_QP *dense_qp, struct C
 
 	COND_RQ(ocp_qp, dense_qp->gz, cond_arg, cond_ws);
 
+	// TODO cond m !!!!!!!!!!!
 	COND_D(ocp_qp, dense_qp->d, dense_qp->d_mask, dense_qp->gz, cond_arg, cond_ws);
+
+	return;
+
+	}
+
+
+
+void COND_QP_COND_SEED(struct OCP_QP *ocp_qp, struct OCP_QP_SEED *ocp_qp_seed, struct DENSE_QP_SEED *dense_qp_seed, struct COND_QP_ARG *cond_arg, struct COND_QP_WS *cond_ws)
+	{
+
+	struct OCP_QP tmp_ocp_qp;
+
+	// alias ocp_qp
+	tmp_ocp_qp.dim = ocp_qp->dim;
+	tmp_ocp_qp.idxb = ocp_qp->idxb;
+	tmp_ocp_qp.BAbt = ocp_qp->BAbt;
+	tmp_ocp_qp.b = ocp_qp_seed->seed_b; // XXX
+	tmp_ocp_qp.RSQrq = ocp_qp->RSQrq;
+	tmp_ocp_qp.rqz = ocp_qp_seed->seed_g; // XXX
+	tmp_ocp_qp.DCt = ocp_qp->DCt;
+	tmp_ocp_qp.d = ocp_qp_seed->seed_d; // XXX
+	tmp_ocp_qp.d_mask = ocp_qp->d_mask;
+	tmp_ocp_qp.Z = ocp_qp->Z;
+	tmp_ocp_qp.idxs_rev = ocp_qp->idxs_rev;
+	tmp_ocp_qp.diag_H_flag = ocp_qp->diag_H_flag;
+	// TODO cond m !!!!!!!!!!!
+
+	COND_B(&tmp_ocp_qp, dense_qp_seed->seed_b, cond_arg, cond_ws);
+
+	COND_RQ(&tmp_ocp_qp, dense_qp_seed->seed_g, cond_arg, cond_ws);
+
+	COND_D(&tmp_ocp_qp, dense_qp_seed->seed_d, NULL, dense_qp_seed->seed_g, cond_arg, cond_ws);
 
 	return;
 
@@ -513,6 +546,34 @@ void COND_QP_EXPAND_SOL(struct OCP_QP *ocp_qp, struct DENSE_QP_SOL *dense_qp_sol
 	{
 
 	EXPAND_SOL(ocp_qp, dense_qp_sol, ocp_qp_sol, cond_arg, cond_ws);
+
+	return;
+
+	}
+
+
+
+void COND_QP_EXPAND_SOL_SEED(struct OCP_QP *ocp_qp, struct OCP_QP_SEED *ocp_qp_seed, struct DENSE_QP_SOL *dense_qp_sol, struct OCP_QP_SOL *ocp_qp_sol, struct COND_QP_ARG *cond_arg, struct COND_QP_WS *cond_ws)
+	{
+
+	struct OCP_QP tmp_ocp_qp;
+
+	// alias ocp_qp
+	tmp_ocp_qp.dim = ocp_qp->dim;
+	tmp_ocp_qp.idxb = ocp_qp->idxb;
+	tmp_ocp_qp.BAbt = ocp_qp->BAbt;
+	tmp_ocp_qp.b = ocp_qp_seed->seed_b; // XXX
+	tmp_ocp_qp.RSQrq = ocp_qp->RSQrq;
+	tmp_ocp_qp.rqz = ocp_qp_seed->seed_g; // XXX
+	tmp_ocp_qp.DCt = ocp_qp->DCt;
+	tmp_ocp_qp.d = ocp_qp_seed->seed_d; // XXX
+	tmp_ocp_qp.d_mask = ocp_qp->d_mask;
+	tmp_ocp_qp.Z = ocp_qp->Z;
+	tmp_ocp_qp.idxs_rev = ocp_qp->idxs_rev;
+	tmp_ocp_qp.diag_H_flag = ocp_qp->diag_H_flag;
+	// TODO cond m !!!!!!!!!!!
+
+	EXPAND_SOL(&tmp_ocp_qp, dense_qp_sol, ocp_qp_sol, cond_arg, cond_ws);
 
 	return;
 

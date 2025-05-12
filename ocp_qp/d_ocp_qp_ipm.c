@@ -55,6 +55,7 @@
 #include <hpipm_d_core_qp_ipm_aux.h>
 #include <hpipm_d_ocp_qp_res.h>
 #include <hpipm_d_ocp_qp_kkt.h>
+#include <hpipm_d_ocp_qp_seed.h>
 #include <hpipm_aux_string.h>
 #include <hpipm_aux_mem.h>
 
@@ -101,6 +102,8 @@
 #define OCP_QP_RES_COMPUTE_LIN d_ocp_qp_res_compute_lin
 #define OCP_QP_RES_CREATE d_ocp_qp_res_create
 #define OCP_QP_RES_MEMSIZE d_ocp_qp_res_memsize
+#define OCP_QP_SEED d_ocp_qp_seed
+#define OCP_QP_SEED_PRINT d_ocp_qp_seed_print
 #define OCP_QP_SOL d_ocp_qp_sol
 #define OCP_QP_SOL_CREATE d_ocp_qp_sol_create
 #define OCP_QP_SOL_MEMSIZE d_ocp_qp_sol_memsize
@@ -201,7 +204,7 @@
 #define OCP_QP_IPM_DELTA_STEP d_ocp_qp_ipm_delta_step
 #define OCP_QP_IPM_SOLVE d_ocp_qp_ipm_solve
 #define OCP_QP_IPM_PREDICT d_ocp_qp_ipm_predict
-#define OCP_QP_IPM_SENS d_ocp_qp_ipm_sens
+#define OCP_QP_IPM_SENS_FRW d_ocp_qp_ipm_sens_frw
 #define OCP_QP_IPM_SENS_ADJ d_ocp_qp_ipm_sens_adj
 
 

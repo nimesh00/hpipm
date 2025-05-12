@@ -3172,15 +3172,25 @@ void OCP_QP_IPM_PREDICT(struct OCP_QP *qp, struct OCP_QP_SOL *qp_sol, struct OCP
 
 
 
-void OCP_QP_IPM_SENS(struct OCP_QP *qp, struct OCP_QP_SOL *qp_sol, struct OCP_QP_IPM_ARG *arg, struct OCP_QP_IPM_WS *ws)
+// forward solution sensitivities
+void OCP_QP_IPM_SENS_FRW(struct OCP_QP *qp, struct OCP_QP_SEED *seed, struct OCP_QP_SOL *sens, struct OCP_QP_IPM_ARG *arg, struct OCP_QP_IPM_WS *ws)
 	{
 
 #if 0
 	OCP_QP_DIM_PRINT(qp->dim);
 	OCP_QP_PRINT(qp->dim, qp);
+	OCP_QP_SEED_PRINT(qp->dim, seed);
 #endif
 
 	int ii;
+
+	// dim
+	int N = qp->dim->N;
+	int *nx = qp->dim->nx;
+	int *nu = qp->dim->nu;
+	int *nb = qp->dim->nb;
+	int *ng = qp->dim->ng;
+	int *ns = qp->dim->ns;
 
 	struct CORE_QP_IPM_WORKSPACE *cws = ws->core_workspace;
 
@@ -3188,13 +3198,14 @@ void OCP_QP_IPM_SENS(struct OCP_QP *qp, struct OCP_QP_SOL *qp_sol, struct OCP_QP
 	cws->lam_min = arg->lam_min;
 	cws->t_min = arg->t_min;
 	cws->t_min_inv = arg->t_min>0 ? 1.0/arg->t_min : 1e30;
+	cws->tau_min = arg->tau_min;
 	cws->t_lam_min = arg->t_lam_min;
 
-	// alias qp vectors into qp_sol
-	cws->v = qp_sol->ux->pa;
-	cws->pi = qp_sol->pi->pa;
-	cws->lam = qp_sol->lam->pa;
-	cws->t = qp_sol->t->pa;
+	// alias qp vectors into sens
+	cws->v = sens->ux->pa;
+	cws->pi = sens->pi->pa;
+	cws->lam = sens->lam->pa;
+	cws->t = sens->t->pa;
 
 	// load sol from bkp
 	for(ii=0; ii<cws->nv; ii++)
@@ -3206,9 +3217,26 @@ void OCP_QP_IPM_SENS(struct OCP_QP *qp, struct OCP_QP_SOL *qp_sol, struct OCP_QP
 	for(ii=0; ii<cws->nc; ii++)
 		cws->t[ii] = cws->t_bkp[ii];
 
+	// use seeds as qp rhs
+	struct OCP_QP tmp_qp;
+	// alias qp
+	tmp_qp.dim = qp->dim;
+	tmp_qp.idxb = qp->idxb;
+	tmp_qp.BAbt = qp->BAbt;
+	tmp_qp.b = seed->seed_b; // XXX
+	tmp_qp.RSQrq = qp->RSQrq;
+	tmp_qp.rqz = seed->seed_g; // XXX
+	tmp_qp.DCt = qp->DCt;
+	tmp_qp.d = seed->seed_d; // XXX
+	tmp_qp.d_mask = qp->d_mask;
+	tmp_qp.Z = qp->Z;
+	tmp_qp.idxs_rev = qp->idxs_rev;
+	tmp_qp.diag_H_flag = qp->diag_H_flag;
+	tmp_qp.m = seed->seed_m; // XXX
+
 	// solve kkt
 	ws->use_Pb = 0;
-	OCP_QP_SOLVE_KKT_STEP(qp, qp_sol, arg, ws);
+	OCP_QP_SOLVE_KKT_STEP(&tmp_qp, sens, arg, ws);
 
 	return;
 
@@ -3216,15 +3244,25 @@ void OCP_QP_IPM_SENS(struct OCP_QP *qp, struct OCP_QP_SOL *qp_sol, struct OCP_QP
 
 
 
-void OCP_QP_IPM_SENS_ADJ(struct OCP_QP *qp, struct OCP_QP_SOL *qp_sol, struct OCP_QP_IPM_ARG *arg, struct OCP_QP_IPM_WS *ws)
+// adjoint solution sensitivities
+void OCP_QP_IPM_SENS_ADJ(struct OCP_QP *qp, struct OCP_QP_SEED *seed, struct OCP_QP_SOL *sens, struct OCP_QP_IPM_ARG *arg, struct OCP_QP_IPM_WS *ws)
 	{
 
 #if 0
 	OCP_QP_DIM_PRINT(qp->dim);
 	OCP_QP_PRINT(qp->dim, qp);
+	OCP_QP_SEED_PRINT(qp->dim, seed);
 #endif
 
 	int ii;
+
+	// dim
+	int N = qp->dim->N;
+	int *nx = qp->dim->nx;
+	int *nu = qp->dim->nu;
+	int *nb = qp->dim->nb;
+	int *ng = qp->dim->ng;
+	int *ns = qp->dim->ns;
 
 	struct CORE_QP_IPM_WORKSPACE *cws = ws->core_workspace;
 
@@ -3232,13 +3270,14 @@ void OCP_QP_IPM_SENS_ADJ(struct OCP_QP *qp, struct OCP_QP_SOL *qp_sol, struct OC
 	cws->lam_min = arg->lam_min;
 	cws->t_min = arg->t_min;
 	cws->t_min_inv = arg->t_min>0 ? 1.0/arg->t_min : 1e30;
+	cws->tau_min = arg->tau_min;
 	cws->t_lam_min = arg->t_lam_min;
 
-	// alias qp vectors into qp_sol
-	cws->v = qp_sol->ux->pa;
-	cws->pi = qp_sol->pi->pa;
-	cws->lam = qp_sol->lam->pa;
-	cws->t = qp_sol->t->pa;
+	// alias qp vectors into sens
+	cws->v = sens->ux->pa;
+	cws->pi = sens->pi->pa;
+	cws->lam = sens->lam->pa;
+	cws->t = sens->t->pa;
 
 	// load sol from bkp
 	for(ii=0; ii<cws->nv; ii++)
@@ -3251,29 +3290,46 @@ void OCP_QP_IPM_SENS_ADJ(struct OCP_QP *qp, struct OCP_QP_SOL *qp_sol, struct OC
 		cws->t[ii] = cws->t_bkp[ii];
 
 	// backup and scale m
-	REAL *m = qp->m->pa;
+	REAL *seed_m = seed->seed_m->pa;
 	REAL *tmp_m = ws->tmp_m->pa;
 	for(ii=0; ii<cws->nc; ii++)
 		{
-		tmp_m[ii] = m[ii];
-		m[ii] *= cws->t[ii];
+		tmp_m[ii] = seed_m[ii];
+		seed_m[ii] *= cws->t[ii];
 		}
+
+	// use seeds as qp rhs
+	struct OCP_QP tmp_qp;
+	// alias qp
+	tmp_qp.dim = qp->dim;
+	tmp_qp.idxb = qp->idxb;
+	tmp_qp.BAbt = qp->BAbt;
+	tmp_qp.b = seed->seed_b; // XXX
+	tmp_qp.RSQrq = qp->RSQrq;
+	tmp_qp.rqz = seed->seed_g; // XXX
+	tmp_qp.DCt = qp->DCt;
+	tmp_qp.d = seed->seed_d; // XXX
+	tmp_qp.d_mask = qp->d_mask;
+	tmp_qp.Z = qp->Z;
+	tmp_qp.idxs_rev = qp->idxs_rev;
+	tmp_qp.diag_H_flag = qp->diag_H_flag;
+	tmp_qp.m = seed->seed_m; // XXX
 
 	// solve kkt
 	ws->use_Pb = 0;
-	OCP_QP_SOLVE_KKT_STEP(qp, qp_sol, arg, ws);
+	OCP_QP_SOLVE_KKT_STEP(&tmp_qp, sens, arg, ws);
 
 	// scale t
-	REAL *t = qp_sol->t->pa;
+	REAL *t = sens->t->pa;
 	for(ii=0; ii<cws->nc; ii++)
 		{
 		t[ii] *= cws->t_inv[ii];
 		}
 
-	// restore m
+	// restore seed_m XXX not needed if seed can be destructed
 	for(ii=0; ii<cws->nc; ii++)
 		{
-		m[ii] = tmp_m[ii];
+		seed_m[ii] = tmp_m[ii];
 		}
 
 	return;

@@ -52,6 +52,7 @@
 #include <hpipm_d_dense_qp_sol.h>
 #include <hpipm_d_dense_qp_res.h>
 #include <hpipm_d_dense_qp_ipm.h>
+#include <hpipm_d_dense_qp_seed.h>
 #include <hpipm_d_dense_qp_utils.h>
 #include <hpipm_d_core_qp_ipm.h>
 #include <hpipm_d_core_qp_ipm_aux.h>
@@ -95,6 +96,8 @@
 #define DENSE_QP_RES_MEMSIZE d_dense_qp_res_memsize
 #define DENSE_QP_RES_WS d_dense_qp_res_ws
 #define DENSE_QP_RESTORE_LIN_DEP_EQ d_dense_qp_restore_lin_dep_eq
+#define DENSE_QP_SEED d_dense_qp_seed
+#define DENSE_QP_SEED_PRINT d_dense_qp_seed_print
 #define DENSE_QP_SOL d_dense_qp_sol
 #define DENSE_QP_SOL_CREATE d_dense_qp_sol_create
 #define DENSE_QP_SOL_MEMSIZE d_dense_qp_sol_memsize
@@ -190,7 +193,7 @@
 #define DENSE_QP_IPM_DELTA_STEP d_dense_qp_ipm_delta_step
 #define DENSE_QP_IPM_SOLVE d_dense_qp_ipm_solve
 #define DENSE_QP_IPM_PREDICT d_dense_qp_ipm_predict
-#define DENSE_QP_IPM_SENS d_dense_qp_ipm_sens
+#define DENSE_QP_IPM_SENS_FRW d_dense_qp_ipm_sens_frw
 #define DENSE_QP_IPM_SENS_ADJ d_dense_qp_ipm_sens_adj
 #define DENSE_QP_COMPUTE_STEP_LENGTH d_dense_qp_compute_step_length
 
